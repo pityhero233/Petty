@@ -1,0 +1,13 @@
+(480, 640, 3)
+circle: 218 x 158 ,r= 21
+confidence =  386.621315193
+circle: 596 x 138 ,r= 12
+confidence =  583.333333333
+circle: 336 x 168 ,r= 32
+confidence =  2111.08398438
+circle: 238 x 54 ,r= 14
+confidence =  507.653061224
+circle: 182 x 294 ,r= 35
+confidence =  250.204081633
+Best circle chosen @i= 3 ,conf= 2111.08398438
+
