@@ -12,7 +12,7 @@ iBest = -1.0
 try:
     cam = cv2.VideoCapture(1)
     cam2 = cv2.VideoCapture(0)
-    cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
+#    cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
 except:
     print "E:cam error"
     system._exit()
@@ -20,7 +20,7 @@ count = 0
 #-------------------------------
 while count < 1000:
     count = count + 1
-    #print "Test #",count,":"
+    print "Test #",count,":"
     try:
         _,frame2 = cam2.read()
         _,frame = cam.read()
@@ -55,9 +55,9 @@ while count < 1000:
         circlesm = np.uint16(np.around(circlesm))
         bestConf = -1
         for index,i in enumerate(circlesm[:]):
-            cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
-            cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
-            cv2.circle(diff,(i[0],i[1]),i[2],(255,0,0),5)
+            #cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
+            #cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
+            #cv2.circle(diff,(i[0],i[1]),i[2],(255,0,0),5)
         #print "circle:",i[0],"x",i[1],",r=",i[2]
             bx = i[0]-i[2];by = i[1]-i[2];
             ex = i[0]+i[2];ey = i[1]+i[2];
@@ -82,16 +82,16 @@ while count < 1000:
         #print("no circle detected!")
         pass
     if (iBest!=-1):
-        #print "Best circle chosen @i=",iBest,",conf=",bestConf,",R=",circlesm[iBest][2]
+        print "Best circle chosen @i=",iBest,",conf=",bestConf,",R=",circlesm[iBest][2]
 
         try:
-            cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
+            #cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
             #name = "test#"+str(count)+".jpg"
             #name2 = "test#"+str(count)+"c.jpg"
             #cv2.imwrite(name,frame2);
             #cv2.imwrite(name2,diff)
-            cv2.imshow("splitter",np.hstack([frame2,diff]))
-            cv2.waitKey(10)
+            #cv2.imshow("splitter",np.hstack([frame2,diff]))
+            #cv2.waitKey(1)
             pass
         except TypeError,e:
             #print e.message
@@ -103,4 +103,4 @@ while count < 1000:
     #cv2.imshow("splitter",np.hstack([frame2,certain]))
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
-    #time.sleep(1)
+    time.sleep(1)
