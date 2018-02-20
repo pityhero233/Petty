@@ -8,22 +8,17 @@
 
     <WebView
         android:id="@+id/sender"
-        android:visibility="gone"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteX="44dp"
-        tools:layout_editor_absoluteY="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     </WebView>
 
     <WebView
+        android:id="@+id/webview_1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp" />
+        android:layout_height="match_parent" >
+
+    </WebView>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -86,6 +81,18 @@
             app:srcCompat="@drawable/server_run_down"
             tools:layout_editor_absoluteX="472dp"
             tools:layout_editor_absoluteY="231dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/floatingActionButton4"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/floatingActionButton4"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="@android:color/transparent"
+            app:srcCompat="@android:drawable/arrow_up_float" />
 
     </RelativeLayout>
 
