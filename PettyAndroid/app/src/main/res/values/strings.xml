@@ -2,4 +2,6 @@
     <string name="app_name">PettyAndroid</string>
     <string name="negative">取消</string>
     <string name="positive">OK</string>
+    <string name="ipdefault">103</string>
+    <string name="bull">...</string>
 </resources>
