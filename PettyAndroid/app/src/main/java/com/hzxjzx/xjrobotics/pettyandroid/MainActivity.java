@@ -40,11 +40,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String input = editText.getText().toString();
-                    String add = "192.168.0."+input+":8888/?action=stream";
+                    String add = "http://192.168.0."+input+":8888/?action=stream";
                     WebView a = (WebView) findViewById(R.id.webview_1);
                     a.loadUrl(add);
-                    Toast.makeText(R.string.,Toast.LENGTH_SHORT).show();
-
+                    Toast.makeText(MainActivity.this,add,Toast.LENGTH_SHORT).show();
 
                 }
             }).show();
@@ -57,8 +56,6 @@ public class MainActivity extends AppCompatActivity {
         WebView a = findViewById(R.id.webview_1);
         a.getSettings().setJavaScriptEnabled(true);
         a.setWebViewClient(new WebViewClient());
-        a.loadUrl("http://192.168.0.103:8888");
-
         Log.d(TAG,"InputDialog Exec");
         showInputDialog();
         Log.d(TAG,"Exec complete.");
