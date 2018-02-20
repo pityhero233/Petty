@@ -6,46 +6,88 @@
     android:layout_height="match_parent"
     tools:context="com.hzxjzx.xjrobotics.pettyandroid.MainActivity">
 
-    <Button
-        android:id="@+id/button5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="后"
-        tools:layout_editor_absoluteX="419dp"
-        tools:layout_editor_absoluteY="227dp" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="右"
-        tools:layout_editor_absoluteX="504dp"
-        tools:layout_editor_absoluteY="179dp" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_x="429dp"
-        android:layout_y="131dp"
-        android:text="前"
-        tools:layout_editor_absoluteX="419dp"
-        tools:layout_editor_absoluteY="131dp" />
-
-    <Button
-        android:id="@+id/button4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="左"
-        tools:layout_editor_absoluteX="353dp"
-        tools:layout_editor_absoluteY="179dp" />
-
     <WebView
-        android:id="@+id/webview_1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:id="@+id/sender"
+        android:visibility="gone"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteX="44dp"
+        tools:layout_editor_absoluteY="20dp">
 
     </WebView>
+
+    <WebView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="304dp"
+        tools:layout_editor_absoluteY="104dp">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/floatingActionButton3"
+            android:layout_toEndOf="@+id/floatingActionButton5"
+            android:layout_toRightOf="@+id/floatingActionButton5"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="@android:color/background_light"
+            app:srcCompat="@drawable/server_run_up"
+            tools:layout_editor_absoluteX="472dp"
+            tools:layout_editor_absoluteY="151dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/floatingActionButton6"
+            android:layout_toLeftOf="@+id/floatingActionButton6"
+            android:layout_toStartOf="@+id/floatingActionButton6"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="@android:color/background_light"
+            app:srcCompat="@drawable/server_run_left"
+            tools:layout_editor_absoluteX="432dp"
+            tools:layout_editor_absoluteY="191dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/floatingActionButton6"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="@android:color/background_light"
+            app:srcCompat="@drawable/server_run_right"
+            tools:layout_editor_absoluteX="512dp"
+            tools:layout_editor_absoluteY="191dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/floatingActionButton3"
+            android:layout_toStartOf="@+id/floatingActionButton3"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="@android:color/background_light"
+            app:srcCompat="@drawable/server_run_down"
+            tools:layout_editor_absoluteX="472dp"
+            tools:layout_editor_absoluteY="231dp" />
+
+    </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>
 <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
