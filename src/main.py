@@ -12,10 +12,29 @@ LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
 
+def start_apache():
+    res=os.system('''sudo service apache2 restart''')
 def start_service():
     res=os.system('''./mjpg_streamer -i "input_uvc.so -d /dev/video1 -f 10 -y" -o "output_http.so -w www -p 8888"''')
+def ReadFile(filepath):
+    file = open(filepath)
+    try:
+        tempa = file.read()
+    finally:
+        file.close()
+    return tempa
 
-print "step 1:start camera..."
+def receiveGets():
+    a=ReadFile('''/var/log/apache2/access.log''')
+
+print "step 1:start camera and apache2 service..."
+try:
+    start_apache()
+except:
+    print "apache2 start error."
+    print "perhaps root priveilges not given?"
+    os._exit()
+
 try:
     cam2 = cv2.VideoCapture(0)
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
@@ -29,6 +48,9 @@ try:
 except:
     print "New Thread Error"
     os._exit()
+
+print "step 3:start handy motion service..."
+try:
 
 #-------------------------------
 while True:
