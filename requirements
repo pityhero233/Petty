@@ -1,7 +1,7 @@
 have apache2 installed
-have python cgi processor copied
-have python dependencies installed
+have python cgi processor and /var/www/controls/* copied
 have DHCP configured
+have libdiff,opencv>3.0.0,numpy,scipy
 
 
 requires root permission to run
