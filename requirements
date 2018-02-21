@@ -1,10 +1,18 @@
 have apache2 installed
 have python cgi processor and /var/www/controls/* copied
-have DHCP configured
+have DHCP preconfigured for static IP address(or static domain)
 have libdiff,opencv>3.0.0,numpy,scipy
+clear apache log(in /var/log/apache2/access.log)
 
 
 requires root permission to run
 check bi-cameras are installed correctly
 !!!check python program's settings are right
 
+when stop,do not force stop or close the terminal window
+ctrl-c one time,wait mjpg-streamer to finish unloading
+when show 'done',ctrl-c another time to stop
+
+if you force stopped the program by mistake,reboot machine.
+
+remember to clear log frequently
