@@ -5,27 +5,50 @@ import time
 import os
 import thread
 import string
+import difflib
 
 lower = np.array([40,0,0])
 upper = np.array([85,255,255])
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
-
+lastString = ""
 def start_apache():
+    res=os.system('''sudo rm -f /var/log/apache2/access.log''')
     res=os.system('''sudo service apache2 restart''')
+
 def start_service():
     res=os.system('''./mjpg_streamer -i "input_uvc.so -d /dev/video1 -f 10 -y" -o "output_http.so -w www -p 8888"''')
-def ReadFile(filepath):
+def ReadRawFile(filepath):
     file = open(filepath)
     try:
         tempa = file.read()
     finally:
         file.close()
+    temp = temp.replace(" ","").replace("\n","")
     return tempa
 
-def receiveGets():
-    a=ReadFile('''/var/log/apache2/access.log''')
+def requestHandler():
+    current=ReadRawFile('''/var/log/apache2/access.log''')
+    if (current!=lastString):
+        #new command detected
+        command = current.replace(lastString,"")
+        lastString = current;
+            if command.find("__MoveLeft"):
+                pass;
+            elif command.find("__MoveRight"):
+                pass;
+            elif command.find("__MoveForward"):
+                pass;
+            elif command.find("__MoveBackward"):
+                pass;
+            elif command.find("__AutoModeUp"):
+                pass;
+            elif command.find("__AutoModeDown"):
+                pass;
+            else:
+                print "W:unknown HTTP request."
+                print command;
 
 print "step 1:start camera and apache2 service..."
 try:
@@ -49,7 +72,7 @@ except:
     print "New Thread Error"
     os._exit()
 
-print "step 3:start handy motion service..."
+print "step 3:start android responding service..."
 try:
 
 #-------------------------------
