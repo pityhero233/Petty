@@ -80,7 +80,7 @@ def CircleDetect():
         mask = cv2.inRange(HSV,lower,upper)
         certain = cv2.bitwise_and(frame2,frame2,mask=mask)
 
-        diff = cv2.GaussianBlur(certain,(5,5),0)
+        diff = cv2.GaussianBlur(certain, (5, 5), 0)
         diff = cv2.threshold(certain, 25, 255, cv2.THRESH_BINARY)[1]
         diff = cv2.morphologyEx(diff,cv2.MORPH_OPEN,element)
         diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
@@ -178,6 +178,6 @@ except:
     os._exit()
 
 print "step 4:circle detect"
-CircleDetect();
+CircleDetect()
 #-------------------------------
 
