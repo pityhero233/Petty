@@ -18,14 +18,14 @@ def start_apache():
     res=os.system('''sudo service apache2 restart''')
 
 def start_service():
-    res=os.system('''./mjpg_streamer -i "input_uvc.so -d /dev/video1 -f 10 -y" -o "output_http.so -w www -p 8888"''')
+    res=os.system('''./mjpg_streamer -i "input_uvc.so -d /dev/video0 -f 10 -y" -o "output_http.so -w www -p 8888"''')
 def ReadRawFile(filepath):
     file = open(filepath)
     try:
         tempa = file.read()
     finally:
         file.close()
-    temp = temp.replace(" ","").replace("\n","")
+    tempa = tempa.replace(" ","").replace("\n","")
     return tempa
 
 def requestHandler():
@@ -34,32 +34,44 @@ def requestHandler():
         #new command detected
         command = current.replace(lastString,"")
         lastString = current;
-            if command.find("__MoveLeft"):
-                pass;
-            elif command.find("__MoveRight"):
-                pass;
-            elif command.find("__MoveForward"):
-                pass;
-            elif command.find("__MoveBackward"):
-                pass;
-            elif command.find("__AutoModeUp"):
-                pass;
-            elif command.find("__AutoModeDown"):
-                pass;
-            else:
-                print "W:unknown HTTP request."
-                print command;
+        if command.find("__MoveLeft"):
+            pass;
+            print "Left"
+        elif command.find("__MoveRight"):
+            pass;
+            print "Right"
+        elif command.find("__MoveForward"):
+            pass;
+            print "Forward"
+        elif command.find("__MoveBackward"):
+            pass;
+            print "Backward"
+        elif command.find("__AutoModeUp"):
+            pass;
+            print "AutoUp"
+        elif command.find("__AutoModeDown"):
+            pass;
+            print "AutoDown"
+        else:
+            print "W:unknown HTTP request."
+            print command;
+        time.sleep(0.1)
+    else:
+        time.sleep(0.5)
 
 print "step 1:start camera and apache2 service..."
 try:
+    lastString = ReadRawFile('''/var/log/apache2/access.log''')
+    print "lastString=",lastString
     start_apache()
+
 except:
     print "apache2 start error."
     print "perhaps root priveilges not given?"
     os._exit()
 
 try:
-    cam2 = cv2.VideoCapture(0)
+    cam2 = cv2.VideoCapture(1)
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
 except:
     print "E:cam error"
@@ -74,7 +86,10 @@ except:
 
 print "step 3:start android responding service..."
 try:
-
+    thread.start_new_thread(requestHandler,())
+except:
+    print "New requestHandler thread Error"
+    os._exit()
 #-------------------------------
 while True:
     count = count + 1
