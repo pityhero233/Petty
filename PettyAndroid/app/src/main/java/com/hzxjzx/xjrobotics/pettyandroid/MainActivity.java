@@ -64,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
                 assert gMenuItem!=null;
                 if (automode){
                     gMenuItem.setTitle("启动自动模式");
-                    server.loadUrl(foreAddress+"ad");
+                    server.loadUrl(foreAddress+"__AutoModeDown");
                     automode=false;
                     Toast.makeText(MainActivity.this,"自动模式已关闭！",Toast.LENGTH_SHORT).show();
                 }else{
                     gMenuItem.setTitle("关闭自动模式");
-                    server.loadUrl(foreAddress+"au");
+                    server.loadUrl(foreAddress+"__AutoModeUp");
                     automode=true;
                     Toast.makeText(MainActivity.this,"自动模式已开启！",Toast.LENGTH_SHORT).show();
                 }
@@ -113,25 +113,25 @@ public class MainActivity extends AppCompatActivity {
         u.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                server.loadUrl(foreAddress+"f");
+                server.loadUrl(foreAddress+"__MoveForward");
             }
         });
         d.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                server.loadUrl(foreAddress+"b");
+                server.loadUrl(foreAddress+"__MoveBackward");
             }
         });
         l.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                server.loadUrl(foreAddress+"l");
+                server.loadUrl(foreAddress+"__MoveLeft");
             }
         });
         r.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                server.loadUrl(foreAddress+"r");
+                server.loadUrl(foreAddress+"__MoveRight");
             }
         });
         Log.d(TAG,"InputDialog Exec");
