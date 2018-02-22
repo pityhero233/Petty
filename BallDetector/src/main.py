@@ -9,6 +9,7 @@ upper = np.array([85,255,255])
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
+threshold = 1000.0
 try:
     cam = cv2.VideoCapture(1)
     cam2 = cv2.VideoCapture(0)
@@ -81,6 +82,10 @@ while count < 1000:
     except TypeError,e:
         #print("no circle detected!")
         pass
+    
+    if bestConf<threshold:
+        iBest = -1;
+
     if (iBest!=-1):
         #print "Best circle chosen @i=",iBest,",conf=",bestConf,",R=",circlesm[iBest][2]
 
@@ -94,12 +99,12 @@ while count < 1000:
             cv2.waitKey(10)
             pass
         except TypeError,e:
-            #print e.message
+            print e.message
             pass
-            #print "E:Segmentation Fault while choosing iBest"
+            print "E:Segmentation Fault while choosing iBest"
     else:
         pass
-        #print "no best circle chosen..."
+        print "no best circle chosen..."
     #cv2.imshow("splitter",np.hstack([frame2,certain]))
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()

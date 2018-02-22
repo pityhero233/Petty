@@ -13,6 +13,7 @@ LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
 lastString = ""
+threshold = 800.0
 def start_apache():
     res=os.system('''sudo service apache2 restart''')
 
@@ -27,6 +28,15 @@ def ReadRawFile(filepath):
         file.close()
         tempa = tempa.replace(" ","").replace("\n","")
     return tempa
+def IsDisappearFromLeft(x,y,X,Y):
+    if (x>X/2.0): 
+        return False;
+    else:
+        return True;
+
+def RelativeAngle(x,y,X,Y):
+    rx = x-X/2.0;
+    return rx/X;
 
 def requestHandler():
     global lastString
@@ -63,7 +73,7 @@ def requestHandler():
             time.sleep(0.5)
 
 def CircleDetect():
-    global lower,upper,LowerBlue,UpperBlue,iBest
+    global lower,upper,LowerBlue,UpperBlue,iBest,threshold
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
     while True:
         try:
@@ -90,11 +100,10 @@ def CircleDetect():
 
 
         circles1 = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
-
+        bestConf = -1
         try:
             circlesm = circles1[0,:,:]
             circlesm = np.uint16(np.around(circlesm))
-            bestConf = -1
             for index,i in enumerate(circlesm[:]):
                 cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
                 cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
@@ -120,28 +129,30 @@ def CircleDetect():
                     iBest = index
 
         except TypeError,e:
-            pass
+            pass;
+
+        if bestConf<threshold:
+            iBest = -1.0;
+
         if (iBest!=-1):
             try:
                 cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
-                #name = "test#"+str(count)+".jpg"
-                #name2 = "test#"+str(count)+"c.jpg"
-                #cv2.imwrite(name,frame2);
-                #cv2.imwrite(name2,diff)
                 cv2.imshow("splitter",np.hstack([frame2,diff]))
                 cv2.waitKey(10)
+                print "get Best Circle,conf=",bestConf
                 pass
             except TypeError,e:
-                #print e.message
-                pass
-                #print "E:Segmentation Fault while choosing iBest"
+                print e.message
+                print "E:Segmentation Fault while choosing iBest"
         else:
             pass
-            #print "no best circle chosen..."
+            cv2.imshow("splitter",np.hstack([frame2,diff]))
+            print "no best circle chosen..."
         #cv2.imshow("splitter",np.hstack([frame2,certain]))
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
-        #time.sleep(1)
+        time.sleep(0.5)
+
     cv2.destroyAllWindows();
 
 #--------------------------------------------------------------
@@ -161,7 +172,7 @@ try:
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
 except:
     print "E:cam error"
-    system._exit()
+    os._exit()
 count = 0
 print "step 2:start video service..."
 try:
