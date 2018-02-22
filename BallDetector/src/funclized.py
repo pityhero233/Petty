@@ -88,14 +88,18 @@ def getDiff(frame2):
         diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
     return diff;
 
-def confidenceCalc(circlesm,diff,frame2):
-    global iBest,totAvgRadius,R
+def confidenceCalc(circles1):
+    global iBest
     if True:
         try:
+            circlesm = circles1[0,:,:]
+            circlesm = np.uint16(np.around(circlesm))
             bestConf = -1
             for index,i in enumerate(circlesm[:]):
                 cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
-            #print "circle:",i[0],"x",i[1],",r=",i[2]
+                cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
+                cv2.circle(diff,(i[0],i[1]),i[2],(255,0,0),5)
+                print "circle:",i[0],"x",i[1],",r=",i[2]
                 bx = i[0]-i[2];by = i[1]-i[2];
                 ex = i[0]+i[2];ey = i[1]+i[2];
                 confident = 0;
@@ -108,10 +112,11 @@ def confidenceCalc(circlesm,diff,frame2):
                         except IndexError,e:
                             pass
                             #print e.message;
-                            #print("W:Index read error\n")
+                            print("W:Index read error\n")
                 confident = confident+1000.0*(i[2]-totAvgRadius)/totAvgRadius#consider totavgRadius effect
+                print "Radius Bonus = ",confident
                 confident = confident*1000.0/(4.0*i[2]*i[2])
-                #print "confidence = ",confident
+                print "confidence = ",confident
                 if bestConf<confident:
                     bestConf = confident
                     iBest = index
@@ -122,8 +127,7 @@ def confidenceCalc(circlesm,diff,frame2):
             else:#update totAvgRadius
                 R[2]=R[1];R[1]=R[0];R[0]=circlesm[iBest][2];
                 totAvgRadius = (R[2]+R[1]+R[0])/3.0;
-        except e:
-            print "gg"
+
 def CircleDetect():
     global lower,upper,LowerBlue,UpperBlue,iBest
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
@@ -142,17 +146,10 @@ def CircleDetect():
         gray = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
 
         circles1 = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
-        try:
-            circlesm = circles1[0,:,:]
-        except:
-            print "waiting for camera load"
-            time.sleep(0.5)
-        finally:
-            print "camera load done."
-            
-        circlesm = np.uint16(np.around(circlesm))
-        confidenceCalc(circlesm,diff,frame2);
+        confidenceCalc(circles1);
 
+        except TypeError,e:
+            pass
         if (iBest!=-1):
             try:
                 cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
@@ -166,12 +163,12 @@ def CircleDetect():
                 cv2.waitKey(10)
                 pass
             except TypeError,e:
-                #print e.message
+                print e.message
                 pass
-                #print "E:Segmentation Fault while choosing iBest"
+                print "E:Segmentation Fault while choosing iBest"
         else:
             pass
-            #print "no best circle chosen..."
+            print "no best circle chosen..."
         #cv2.imshow("splitter",np.hstack([frame2,certain]))
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
@@ -179,39 +176,7 @@ def CircleDetect():
     cv2.destroyAllWindows();
 
 #--------------------------------------------------------------
-print "step 1:start camera and apache2 service..."
-try:
-    lastString = ReadRawFile('''/var/log/apache2/access.log''')
-    print "lastString=",lastString
-    start_apache()
-
-except:
-    print "apache2 start error."
-    print "perhaps root priveilges not given?"
-    os._exit()
-
-try:
-    cam2 = cv2.VideoCapture(1)
-    cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
-except:
-    print "E:cam error"
-    os._exit()
-count = 0
-print "step 2:start video service..."
-try:
-    thread.start_new_thread(start_service,())
-except:
-    print "New Thread Error"
-    os._exit()
-
-print "step 3:start android responding service..."
-try:
-    thread.start_new_thread(requestHandler,())
-except:
-    print "New requestHandler thread Error"
-    os._exit()
-
-print "step 4:circle detect"
+print "start"
 CircleDetect()
 #-------------------------------
 
