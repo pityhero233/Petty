@@ -1,0 +1,8 @@
+3.4:
+    1.rewrite opencv with opencv+tensorflow
+    2.rewrite avgR with linear regression
+    3.add android buttons
+    4.rewrite apache with flask
+    5.Multithread addition
+        5.1:detach run services
+        5.2:multithreadize
