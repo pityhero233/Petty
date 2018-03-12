@@ -3,14 +3,16 @@ import numpy as np
 #import os.system as sys
 
 import os
-lower = np.array([40,0,0])
-upper = np.array([85,255,255])
+#lower = np.array([40,0,0])
+#upper = np.array([85,255,255])
+lower = (29,86,6)
+upper = (64,255,255)
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
 try:
-    cam = cv2.VideoCapture(0)
-    cam2 = cv2.VideoCapture(1)
+    cam2 = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(1)
     _,frame2 = cam.read()
     _,frame = cam2.read()
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
@@ -35,7 +37,7 @@ gray = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
 print(frame2.shape)
 
 #circles1= cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=240)
-circles1 = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=150)
+circles1 = cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=150)
 #circles2 = cv2.HoughCircles(diff,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=300)
 try:
     circlesm = circles1[0,:,:]

@@ -7,8 +7,11 @@ import thread
 import string
 import difflib
 
-lower = np.array([40,0,0])
-upper = np.array([85,255,255])
+#lower = np.array([40,0,0])
+lower = (25,85,6)
+upper = (64,255,255)
+
+#upper = np.array([85,255,255])
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
@@ -69,7 +72,7 @@ def RadJudge(x,y,r,X,Y):
     if (x>X or y>Y):
         print "E:RadJudge Out-of-bound"
         os._exit();
-    
+
     relativeX = (x-X/2)/X
     return relativeX
 
@@ -78,15 +81,20 @@ def getDiff(frame2):
         element = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
 
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
-        H,S,V = cv2.split(HSV)
+        #H,S,V = cv2.split(HSV)
         mask = cv2.inRange(HSV,lower,upper)
-        certain = cv2.bitwise_and(frame2,frame2,mask=mask)
-
-        diff = cv2.GaussianBlur(certain, (5, 5), 0)
-        diff = cv2.threshold(certain, 25, 255, cv2.THRESH_BINARY)[1]
-        diff = cv2.morphologyEx(diff,cv2.MORPH_OPEN,element)
-        diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
-    return diff;
+        mask = cv2.erode(mask,None,iterations=2)
+        mask = cv2.dilate(mask,None,iterations=2)
+        contours = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
+        center = None
+        if len(contours)>0:
+            c = max(contours.key=cv2.contourArea)
+            ((x,y),radius) = cv2.minEnclosingCircle(c)
+            M=cv2.moments(c)
+            center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
+            if radius > 10: #confirm it is a ball
+                cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
+                cv2.circle(frame2,center,5,(0,0,255),-1)
 
 def confidenceCalc(circlesm,diff,frame2):
     global iBest,totAvgRadius,R
@@ -132,7 +140,6 @@ def CircleDetect():
         count = count + 1
         try:
             _,frame2 = cam2.read()
-            
         except aa:
             print("E:get frame error.")
             print(aa.message)
@@ -149,7 +156,7 @@ def CircleDetect():
             time.sleep(0.5)
         finally:
             print "camera load done."
-            
+
         circlesm = np.uint16(np.around(circlesm))
         confidenceCalc(circlesm,diff,frame2);
 

@@ -4,8 +4,12 @@ import time
 #import os.system as sys
 import os
 import string
-lower = np.array([40,0,0])
-upper = np.array([85,255,255])
+
+#lower = np.array([40,0,0])
+#upper = np.array([85,255,255])
+lower = (29,86,6)
+upper = (64,255,255)
+
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
 iBest = -1.0
@@ -35,20 +39,23 @@ while count < 1000:
     HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
 
     #HSV = cv2.GaussianBlur(HSV, (5, 5), 0)
-    H,S,V = cv2.split(HSV)
+    #H,S,V = cv2.split(HSV)
     mask = cv2.inRange(HSV,lower,upper)
-    certain = cv2.bitwise_and(frame2,frame2,mask=mask)
+    #certain = cv2.bitwise_and(frame2,frame2,mask=mask)
+    mask = cv2.erode(mask,None,iterations=2)
+    mask = cv2.dilate(mask,None,iterations=2)
+
     #cv2.imshow("splitter",np.stack([frame,frame2,certain]))
-    diff = cv2.GaussianBlur(certain,(5,5),0)
-    diff = cv2.threshold(certain, 25, 255, cv2.THRESH_BINARY)[1]
-    diff = cv2.morphologyEx(diff,cv2.MORPH_OPEN,element)
-    diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
+    #diff = cv2.GaussianBlur(certain,(5,5),0)
+    #diff = cv2.threshold(certain, 25, 255, cv2.THRESH_BINARY)[1]
+    #diff = cv2.morphologyEx(diff,cv2.MORPH_OPEN,element)
+    #diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
 
     gray = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
 #print(frame2.shape)
 
-#circles1= cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=240)
-    circles1 = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
+#circles1= cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=240)
+    circles1 = cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
 #circles2 = cv2.HoughCircles(diff,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=300)
     try:
         circlesm = circles1[0,:,:]
