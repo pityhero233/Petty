@@ -79,7 +79,7 @@ def getDiff(frame2):#returns a num[] contains [x,y,r]
         contours = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
         if len(contours)>0:
-            c = max(contours.key=cv2.contourArea)
+            c = max(contours,key=cv2.contourArea)
             ((x,y),radius) = cv2.minEnclosingCircle(c)
             M=cv2.moments(c)
             center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
