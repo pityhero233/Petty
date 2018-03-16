@@ -15,6 +15,7 @@ automode = True
 #upper = np.array([85,255,255])
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
+cam2 = cv2.VideoCapture(1)
 iBest = -1.0
 lastString = ""
 #totAvgConfident=0;#last 10 round's average confident,used to recognize round
@@ -79,7 +80,7 @@ def getDiff(frame2):#returns a num[] contains [x,y,r]
         contours = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
         if len(contours)>0:
-            c = max(contours.key=cv2.contourArea)
+            c = max(contours,key=cv2.contourArea)
             ((x,y),radius) = cv2.minEnclosingCircle(c)
             M=cv2.moments(c)
             center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
@@ -97,9 +98,9 @@ def CircleDetect():#detect circle
         count = count + 1
         try:
             _,frame2 = cam2.read()
-        except aa:
+        except:
             print("E:get frame error.")
-            print(aa.message)
+            #print(aa.message)
             os._exit()
 
         diff=getDiff(frame2)
