@@ -68,7 +68,7 @@ def RadJudge(x,y,r,X,Y):
     relativeX = (x-X/2)/X
     return relativeX
 
-def getDiff(frame2):#returns a num[] contains [x,y,r]
+def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         element = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
 
@@ -89,17 +89,27 @@ def getDiff(frame2):#returns a num[] contains [x,y,r]
         		continue
         	pass;
         	percentage = contourArea / (radius * radius * 3.1415926)
+        	if percentage>maxPercentage and percentage>0.50:#requires DEBUG
+        		maxPercentageContour = contour
 
-        if len(contours)>0:
-            c = max(contours,key=cv2.contourArea
-            ((x,y),radius) = cv2.minEnclosingCircle(c)
-            M=cv2.moments(c)
+        if (maxPercentageContour!=None):
+        	M=cv2.moments(maxPercentageContour)
             center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
-            if radius > 10: #confirm it is a ball
-                datatorep = [int(x),int(y),int(radius)]
-                cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
-                cv2.circle(frame2,center,5,(0,0,255),-1)
-                return datatorep
+            ((x,y),radius) = cv2.minEnclosingCircle(contour)
+            cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
+            cv2.circle(frame2,center,5,(0,0,255),-1)
+            datatorep = [int(x),int(y),int(radius)]
+            return datatorep
+        # if len(contours)>0:
+        #     c = max(contours,key=cv2.contourArea
+        #     ((x,y),radius) = cv2.minEnclosingCircle(c)
+        #     M=cv2.moments(c)
+        #     center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
+        #     if radius > 10: #confirm it is a ball
+        #         datatorep = [int(x),int(y),int(radius)]
+        #         cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
+        #         cv2.circle(frame2,center,5,(0,0,255),-1)
+        #         return datatorep
 
 def CircleDetect():#detect circle
     global lower,upper,LowerBlue,UpperBlue,iBest
@@ -114,7 +124,7 @@ def CircleDetect():#detect circle
             #print(aa.message)
             os._exit()
 
-        diff=getDiff(frame2)
+        diff=getCircle(frame2)
         cv2.imshow("splitter",frame2)
         cv2.waitKey(10)
         print diff #show the data containing [x,y,r]
