@@ -13,6 +13,9 @@ iBest = -1.0
 try:
     cam2 = cv2.VideoCapture(1)
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
+    _,frame2 = cam2.read()
+    cv2.imshow("splitter",frame2)
+
 except aa:
     print(aa.message)
     os._exit()
@@ -50,6 +53,8 @@ while True:
 	print(frame2.shape)
 
 	cv2.imshow("splitter",np.hstack([frame2,certain]))
+	cv2.waitKey(10)
+	
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
