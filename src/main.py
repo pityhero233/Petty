@@ -76,7 +76,8 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
         #H,S,V = cv2.split(HSV)
         mask = cv2.inRange(HSV,lower,upper)
         mask = cv2.erode(mask,None,iterations=2)
-        mask = cv2.dilate(mask,None,iterations=2)
+        mask = cv2.dilate(mask,None,iterations=4)
+	cv2.imshow("debug",mask)
         contours = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
 
@@ -91,9 +92,10 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
         	percentage = contourArea / (radius * radius * 3.1415926)
         	if percentage>maxPercentage and percentage>0.50:#requires DEBUG
         		maxPercentageContour = contour
+			maxPercentage = percentage
 
         if (maxPercentageContour!=None):
-        	M=cv2.moments(maxPercentageContour)
+            M=cv2.moments(maxPercentageContour)
             center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
             ((x,y),radius) = cv2.minEnclosingCircle(contour)
             cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
@@ -114,6 +116,7 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
 def CircleDetect():#detect circle
     global lower,upper,LowerBlue,UpperBlue,iBest
     cv2.namedWindow("splitter",cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow("debug",cv2.WINDOW_AUTOSIZE)
     count = 0
     while True:
         count = count + 1
@@ -126,16 +129,16 @@ def CircleDetect():#detect circle
 
         diff=getCircle(frame2)
         cv2.imshow("splitter",frame2)
-        cv2.waitKey(10)
+        cv2.waitKey(1)
         print diff #show the data containing [x,y,r]
 
     cv2.destroyAllWindows();
 
 #--------------------------------------------------------------
 print "step 1 of 4:start flask service"
-thread.start_new_thread(start_http_handler,())
+#thread.start_new_thread(start_http_handler,())
 print "step 2 of 4:start direct play service"
-thread.start_new_thread(start_service,())
+#thread.start_new_thread(start_service,())
 print "step 3 of 4:start tennis detect service"
 CircleDetect()
 print "step 4:circle detect"
