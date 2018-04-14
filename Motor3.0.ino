@@ -14,6 +14,7 @@ int InterruptR2 = 2; //pin 21
 char serialData[18];  //储存信息
 int numdata=0;
 int mode;              // 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
+                    //TODO:7->SHOOT 8->PICK
 double TargetSpeed;
 
 unsigned long previousMillis = 0 ;
