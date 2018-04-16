@@ -36,33 +36,33 @@ shootTryout = 0;
 lastShootTime = 0;
 ballHistory=[]
 
-class Command(Enum):
+Command = {
                  # 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
-    STOP = 0
-    FORWARD = 1
-    BACK = 2
-    LEFT = 3
-    RIGHT = 4
-    TURNLEFT = 5
-    TURNRIGHT = 6
-    SHOOT = 7
-    PICK = 8
-
-class systemState(Enum):
-    empty = 0
-    loading = 1
-    handmode = 2
-    automode_normal = 3
-    automode_retrieve = 4#finding the ball
-    automode_retrieve_go = 5
-    automode_shooting = 6
-
-class userPreference(Enum):
-    PlayDog = 0
-    RandomShoot = 1
-    TimelyShoot = 2
-
-state = systemState["empty"]
+    "STOP" : 0,
+    "FORWARD" : 1,
+    "BACK" : 2,
+    "LEFT" : 3,
+    "RIGHT" : 4,
+    "TURNLEFT" : 5,
+    "TURNRIGHT" : 6,
+    "SHOOT" : 7,
+    "PICK" : 8
+};
+systemState = {
+    "empty" : 0,
+    "loading" : 1,
+    "handmode" : 2,
+    "automode_normal" : 3,
+    "automode_retrieve" : 4,#finding the ball,
+    "automode_retrieve_go" : 5,
+    "automode_shooting" : 6
+};
+userPreference = {
+    "PlayDog" : 0,
+    "RandomShoot" : 1,
+    "TimelyShoot" : 2
+}
+state = systemState("empty")
 strategy = userPreference["PlayDog"]#TODO
 #-------------HTTP response part
 @app.route('/')
@@ -70,27 +70,36 @@ def hello_world():
 	return 'server run success on port 80'
 @app.route('/l')
 def left():
-	if state==systemState["handmode"]:
-        callUno(Command["LEFT"])
+	if state==systemState("handmode"):
+        callUno(Command("LEFT"))
 @app.route('/r')
 def right():
-	if state==systemState["handmode"]:
-        callUno(Command["RIGHT"])
+	if state==systemState("handmode"):
+        callUno(Command("RIGHT"))
 @app.route('/f')
 def forward():
-	if state==systemState["handmode"]:
-        callUno(Command["FORWARD"])
+	if state==systemState("handmode"):
+        callUno(Command("FORWARD"))
 @app.route('/d')
 def down():
-	if state==systemState["handmode"]:
-        callUno(Command["BACK"])
+	if state==systemState("handmode"):
+        callUno(Command("BACK"))
 @app.route('/up')
 def upAuto():
-	state=systemState["automode_normal"]
+	state=systemState("automode_normal")
 
 @app.route('/down')
 def downAuto():
-	state=systemState["handmode"]
+	state=systemState("handmode")
+@app.route('/shoot')
+def shoot():
+	if state==systemState("handmode"):
+        callUno(Command("SHOOT"))
+
+@app.route('/pick')
+def pick():
+	if state==systemState("handmode"):
+        callUno(Command("PICK"))
 
 @app.route('/prefer_playdog')
 def chg_prf_pd():
@@ -266,7 +275,7 @@ def TennisDetect(frame2):#capture a picture and perform a tennis detect
     else:
         return [0,0,0]
 #--------------------------------------------------------------
-state = systemState["loading"]
+state = systemState("loading")
 print "step 0 of 5:perform arduino detection"
 port_list = list(serial.tools.list_ports.comports())  
 if len(port_list)<=0:
@@ -277,13 +286,13 @@ else:
     arduino = serial.Serial(port_using,57600,timeout = 60) 
     print("using ",arduino.name)
     print("testing connection...")
-    callUno(Command["FORWARD"])
+    callUno(Command("FORWARD"))
     time.sleep(0.5)
-    callUno(Command["STOP"])
+    callUno(Command("STOP"))
     time.sleep(0.5)
-    callUno(Command["SHOOT"])
+    callUno(Command("SHOOT"))
     time.sleep(0.5)
-    callUno(Command["STOP"])
+    callUno(Command("STOP"))
     print("connection test complete.")
 print "step 1 of 5:read user preferences"
 with open("UserPreferences.pk","r") as usf:
@@ -296,29 +305,29 @@ thread.start_new_thread(start_service,())
 print "step 4 of 5:start dog mood processing service"
 
 print "step 5 of 5:start tennis detect service"
-if (state==systemState["loading"]):
+if (state==systemState("loading")):
     print "automode started."
-    state=systemState["automode_normal"]
-elif (state==systemState["automode_normal"]):
+    state=systemState("automode_normal")
+elif (state==systemState("automode_normal")):
     dogmood = mood()
     if dogmood>50:
-        state=systemState["automode_shooting"]
+        state=systemState("automode_shooting")
         p1 = takePhoto();time.sleep(1); p2 = takePhoto();
         if not isDangerous(p1,p2,320,240) and isFineToShoot(): #HACK
-            callUno(Command["SHOOT"])
+            callUno(Command("SHOOT"))
             shootTryout = 0;
             time.sleep(random.randint(5,20))
-            state=systemState["automode_retrieve"]
+            state=systemState("automode_retrieve")
         else:
-            callUno(Command["RIGHT"])
+            callUno(Command("RIGHT"))
             time.sleep(0.5)
-            callUno(Command["STOP"])
+            callUno(Command("STOP"))
             shootTryout = shootTryout+1
             if shootTryout>10:
                 shootTryout = 0;
                 print("dog not good,shoot another time.")
                 lastShootTime = time.time()
-elif (state==systemState["automode_retrieve"]):
+elif (state==systemState("automode_retrieve")):
     pic = takePhoto();
     if pic!=-1:#take success
         ans = TennisDetect(pic)
@@ -336,39 +345,39 @@ elif (state==systemState["automode_retrieve"]):
             avgy = _sy/_numbercnt
             if dist(ans[0],ans[1],avgx,avgy)<=pickupThreshold:#ball stopped
                 if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))<=pickAngleThreshold:#angle right
-                        state=systemState["automode_retrieve_go"]
+                        state=systemState("automode_retrieve_go")
                 else:
                     if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))>0:
-                        callUno(Command["TURNRIGHT"],100)
+                        callUno(Command("TURNRIGHT"),100)
                         time.sleep(0.3)
-                        callUno(Command["STOP"])
+                        callUno(Command("STOP"))
                     else:
-                        callUno(Command["TURNLEFT"],100)
+                        callUno(Command("TURNLEFT"),100)
                         time.sleep(0.3)
-                        callUno(Command["STOP"])
+                        callUno(Command("STOP"))
         else:#ball not found
             if len(ballHistory)>0:#trying to track ball based on last appear position
                 lastID = len(ballHistory)-1
                 if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))<=pickAngleThreshold:#angle right
-                    state=systemState["automode_retrieve_go"]
+                    state=systemState("automode_retrieve_go")
                 else:
                     if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))>0:
-                        callUno(Command["TURNRIGHT"],100)
+                        callUno(Command("TURNRIGHT"),100)
                         time.sleep(0.3)
-                        callUno(Command["STOP"])
+                        callUno(Command("STOP"))
                     else:
-                        callUno(Command["TURNLEFT"],100)
+                        callUno(Command("TURNLEFT"),100)
                         time.sleep(0.3)
-                        callUno(Command["STOP"])
+                        callUno(Command("STOP"))
             
-elif (state==systemState["automode_retrieve_go"]):
+elif (state==systemState("automode_retrieve_go")):
     pic = takePhoto()
     if pic!=-1:
         loc = TennisDetect(pic)
         if loc!=[0,0,0]:#FIXME
             pass#SHOULD BE JUDGE WHEN TO PICK THE BALL AND EVENTUALLY PICK IT 
-            state=systemState["automode_normal"]
+            state=systemState("automode_normal")
         else:
-            state=systemState["automode_retrieve"]
+            state=systemState("automode_retrieve")
 
 #-------------------------------
