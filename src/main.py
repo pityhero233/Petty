@@ -72,19 +72,19 @@ def hello_world():
 @app.route('/l')
 def left():
 	if state==systemState.handmode:
-        callUno(Command.LEFT)
+        	callUno(Command.LEFT)
 @app.route('/r')
 def right():
 	if state==systemState.handmode:
-        callUno(Command.RIGHT)
+        	callUno(Command.RIGHT)
 @app.route('/f')
 def forward():
 	if state==systemState.handmode:
-        callUno(Command.FORWARD)
+        	callUno(Command.FORWARD)
 @app.route('/d')
 def down():
 	if state==systemState.handmode:
-        callUno(Command.BACK)
+        	callUno(Command.BACK)
 @app.route('/up')
 def upAuto():
 	state=systemState.automode_normal
@@ -95,12 +95,12 @@ def downAuto():
 @app.route('/shoot')
 def shoot():
 	if state==systemState.handmode:
-        callUno(Command.SHOOT)
+        	callUno(Command.SHOOT)
 
 @app.route('/pick')
 def pick():
 	if state==systemState.handmode:
-        callUno(Command.PICK)
+        	callUno(Command.PICK)
 
 @app.route('/prefer_playdog')
 def chg_prf_pd():
