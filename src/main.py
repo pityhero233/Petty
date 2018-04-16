@@ -6,6 +6,7 @@ import thread
 import string
 import math
 import serial
+import serial.tools.list_ports
 import pickle
 import random
 from flask import Flask
@@ -63,7 +64,7 @@ class userPreference(Enum):
     TimelyShoot = 2
 
 state = systemState.empty
-strategy = userPreference["PlayDog"]#TODO
+strategy = userPreference.PlayDog#TODO
 #-------------HTTP response part
 @app.route('/')
 def hello_world():
