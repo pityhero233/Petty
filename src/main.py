@@ -105,12 +105,12 @@ def pick():
 @app.route('/prefer_playdog')
 def chg_prf_pd():
     strategy = userPreference.PlayDog
-    with open("UserPreferences.pk","rw") as filea:
+    with open("UserPreferences.pk","wb") as filea:
         pickle.dump(strategy,filea)
 @app.route('/prefer_random')
 def chg_prf_rd():
     strategy = userPreference.RandomShoot
-    with open("UserPreferences.pk","rw") as filea:
+    with open("UserPreferences.pk","wb") as filea:
         pickle.dump(strategy,filea)
 #@app.route('/prefer_timelyshoot') TODO
 
@@ -300,7 +300,7 @@ else:
     callUno(Command.STOP)
     print("connection test complete.")
 print "step 1 of 5:read user preferences"
-with open("UserPreferences.pk","r") as usf:
+with open("UserPreferences.pk","rb") as usf:
     strategy = pickle.load(usf)
     print("strategy=",strategy)
 print "step 2 of 5:start user respond service"
