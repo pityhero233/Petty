@@ -36,7 +36,7 @@ shootTryout = 0;
 lastShootTime = 0;
 ballHistory=[]
 
-Command = {
+class Command(Enum):
                  # 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
     "STOP" : 0,
     "FORWARD" : 1,
@@ -47,8 +47,8 @@ Command = {
     "TURNRIGHT" : 6,
     "SHOOT" : 7,
     "PICK" : 8
-};
-systemState = {
+
+class systemState(Enum):
     "empty" : 0,
     "loading" : 1,
     "handmode" : 2,
@@ -56,8 +56,8 @@ systemState = {
     "automode_retrieve" : 4,#finding the ball,
     "automode_retrieve_go" : 5,
     "automode_shooting" : 6
-};
-userPreference = {
+
+class userPreference(Enum):
     "PlayDog" : 0,
     "RandomShoot" : 1,
     "TimelyShoot" : 2
