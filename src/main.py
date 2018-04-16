@@ -105,9 +105,13 @@ def pick():
 @app.route('/prefer_playdog')
 def chg_prf_pd():
     strategy = userPreference.PlayDog
+    with open("UserPreferences.pk","rw") as filea:
+        pickle.dump(strategy,filea)
 @app.route('/prefer_random')
 def chg_prf_rd():
     strategy = userPreference.RandomShoot
+    with open("UserPreferences.pk","rw") as filea:
+        pickle.dump(strategy,filea)
 #@app.route('/prefer_timelyshoot') TODO
 
 #EOF---------------------
