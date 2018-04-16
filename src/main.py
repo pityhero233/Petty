@@ -133,10 +133,10 @@ def ReadRawFile(filepath):
 
 def callUno(action,parameter=-1):
     if (parameter==-1):
-        arduino.write(str(action.value)+" "+str(normalSpeed))
+        arduino.write(str(action)+" "+str(normalSpeed))
     else:
         if parameter>0 and parameter<=999:
-            arduino.write(str(action.value)+" "+str(parameter))
+            arduino.write(str(action)+" "+str(parameter))
         else:
             print("E:callUno parameter fail")
 
