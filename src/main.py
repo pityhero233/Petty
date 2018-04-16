@@ -310,79 +310,80 @@ thread.start_new_thread(start_service,())
 print "step 4 of 5:start dog mood processing service"
 
 print "step 5 of 5:start tennis detect service"
-if (state==systemState.loading):
-    print "automode started."
-    state=systemState.automode_normal
-elif (state==systemState.automode_normal):
-    dogmood = mood()
-    if dogmood>50:
-        state=systemState.automode_shooting
-        p1 = takePhoto();time.sleep(1); p2 = takePhoto();
-        if not isDangerous(p1,p2,320,240) and isFineToShoot(): #HACK
-            callUno(Command.SHOOT)
-            shootTryout = 0;
-            time.sleep(random.randint(5,20))
-            state=systemState.automode_retrieve
-        else:
-            callUno(Command.RIGHT)
-            time.sleep(0.5)
-            callUno(Command.STOP)
-            shootTryout = shootTryout+1
-            if shootTryout>10:
+while True:
+    if (state==systemState.loading):
+        print "automode started."
+        state=systemState.automode_normal
+    elif (state==systemState.automode_normal):
+        dogmood = mood()
+        if dogmood>50:
+            state=systemState.automode_shooting
+            p1 = takePhoto();time.sleep(1); p2 = takePhoto();
+            if not isDangerous(p1,p2,320,240) and isFineToShoot(): #HACK
+                callUno(Command.SHOOT)
                 shootTryout = 0;
-                print("dog not good,shoot another time.")
-                lastShootTime = time.time()
-elif (state==systemState.automode_retrieve):
-    pic = takePhoto();
-    if pic!=-1:#take success
-        ans = TennisDetect(pic)
-        if ans!=[0,0,0]:#ball found
-            ballHistory.append(ans)
-            if len(ballHistory)>10:#clear data,
-                for i in range(0,5):
-                    ballHistory.pop(i)
-            _sx=0;_sy=0;_numbercnt=0#calc if the ball has been stopped
-            for (x,y,r) in ballHistory:
-                _sx=_sx+x
-                _sy=_sy+y
-                _numbercnt=_numbercnt+1
-            avgx = _sx/_numbercnt
-            avgy = _sy/_numbercnt
-            if dist(ans[0],ans[1],avgx,avgy)<=pickupThreshold:#ball stopped
-                if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))<=pickAngleThreshold:#angle right
+                time.sleep(random.randint(5,20))
+                state=systemState.automode_retrieve
+            else:
+                callUno(Command.RIGHT)
+                time.sleep(0.5)
+                callUno(Command.STOP)
+                shootTryout = shootTryout+1
+                if shootTryout>10:
+                    shootTryout = 0;
+                    print("dog not good,shoot another time.")
+                    lastShootTime = time.time()
+    elif (state==systemState.automode_retrieve):
+        pic = takePhoto();
+        if pic!=-1:#take success
+            ans = TennisDetect(pic)
+            if ans!=[0,0,0]:#ball found
+                ballHistory.append(ans)
+                if len(ballHistory)>10:#clear data,
+                    for i in range(0,5):
+                        ballHistory.pop(i)
+                _sx=0;_sy=0;_numbercnt=0#calc if the ball has been stopped
+                for (x,y,r) in ballHistory:
+                    _sx=_sx+x
+                    _sy=_sy+y
+                    _numbercnt=_numbercnt+1
+                avgx = _sx/_numbercnt
+                avgy = _sy/_numbercnt
+                if dist(ans[0],ans[1],avgx,avgy)<=pickupThreshold:#ball stopped
+                    if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))<=pickAngleThreshold:#angle right
+                            state=systemState.automode_retrieve_go
+                    else:
+                        if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))>0:
+                            callUno(Command.TURNRIGHT,100)
+                            time.sleep(0.3)
+                            callUno(Command.STOP)
+                        else:
+                            callUno(Command.TURNLEFT,100)
+                            time.sleep(0.3)
+                            callUno(Command.STOP)
+            else:#ball not found
+                if len(ballHistory)>0:#trying to track ball based on last appear position
+                    lastID = len(ballHistory)-1
+                    if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))<=pickAngleThreshold:#angle right
                         state=systemState.automode_retrieve_go
-                else:
-                    if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))>0:
-                        callUno(Command.TURNRIGHT,100)
-                        time.sleep(0.3)
-                        callUno(Command.STOP)
                     else:
-                        callUno(Command.TURNLEFT,100)
-                        time.sleep(0.3)
-                        callUno(Command.STOP)
-        else:#ball not found
-            if len(ballHistory)>0:#trying to track ball based on last appear position
-                lastID = len(ballHistory)-1
-                if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))<=pickAngleThreshold:#angle right
-                    state=systemState.automode_retrieve_go
-                else:
-                    if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))>0:
-                        callUno(Command.TURNRIGHT,100)
-                        time.sleep(0.3)
-                        callUno(Command.STOP)
-                    else:
-                        callUno(Command.TURNLEFT,100)
-                        time.sleep(0.3)
-                        callUno(Command.STOP)
-            
-elif (state==systemState.automode_retrieve_go):
-    pic = takePhoto()
-    if pic!=-1:
-        loc = TennisDetect(pic)
-        if loc!=[0,0,0]:#FIXME
-            pass#SHOULD BE JUDGE WHEN TO PICK THE BALL AND EVENTUALLY PICK IT 
-            state=systemState.automode_normal
-        else:
-            state=systemState.automode_retrieve
+                        if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))>0:
+                            callUno(Command.TURNRIGHT,100)
+                            time.sleep(0.3)
+                            callUno(Command.STOP)
+                        else:
+                            callUno(Command.TURNLEFT,100)
+                            time.sleep(0.3)
+                            callUno(Command.STOP)
+                
+    elif (state==systemState.automode_retrieve_go):
+        pic = takePhoto()
+        if pic!=-1:
+            loc = TennisDetect(pic)
+            if loc!=[0,0,0]:#FIXME
+                pass#SHOULD BE JUDGE WHEN TO PICK THE BALL AND EVENTUALLY PICK IT 
+                state=systemState.automode_normal
+            else:
+                state=systemState.automode_retrieve
 
 #-------------------------------
