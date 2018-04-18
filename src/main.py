@@ -25,7 +25,9 @@ cam2 = cv2.VideoCapture(1)#system cam
 iBest = -1.0
 String = ""
 R=[30,31,32]
-
+lower = (25,85,6)
+upper = (64,255,255)
+rounds = []
 normalSpeed = 111#100 to 999
 minShootTime = 1200;#20 minutes = 1200 secs
 pickupThreshold = 20#FIXME
@@ -36,6 +38,7 @@ screeny = 320
 shootTryout = 0;
 lastShootTime = 0;
 ballHistory=[]
+currentPhoto=takePhoto(cam2)#test if the cam is success
 
 class Command(Enum):
                  # 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
@@ -143,22 +146,32 @@ def callUno(action,parameter=-1):
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 
+
+def photoPool(cam):#grab&throw excessive frames and refresh pool every 0.5 secs
+    bt = time.time()
+    while True:
+        _,frame = cam.grab()
+        if (time.time()-bt)>0.5:
+            _,currentPhoto = cam.read()
+            bt = time.time()
+
 def RadJudge(ballx,bally,screenx,screeny):
     return (ballx-screenx/2)
 
-def isDangerous(frame1,frame2,px,py):#detect if point(px,py) is in "the moving area of frame"(dog)
-    gray1 = cv2.cvtColor(frame1,cv2.CV_BGR2GRAY)
-    gray2 = cv2.cvtColor(frame2,cv2.CV_BGR2GRAY)
+def isDangerous(frame1,frame2,px,py):#detect if point(px,py) is in "the moving area of frame"(dog) PASSED
+    gray1 = cv2.cvtColor(frame1,cv2.COLOR_BGR2GRAY)#FIXED 1
+    gray2 = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)#FIXED 2
     diff = cv2.absdiff(gray1,gray2)
-    thr = cv2.threshold(diff,50,255,cv2.THRESH_BINARY)
+    _,thr = cv2.threshold(diff,15,255,cv2.THRESH_BINARY)#FIXED 3&4
     erode_kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
     dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(15,15))
     thr = cv2.erode(thr,erode_kernel)
     thr = cv2.dilate(thr,dilate_kernel)
-    contours = cv2.findContours(thr,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    contours,_ = cv2.findContours(thr,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+
     for tot in contours:
-        ((x1,y1),(x2,y2)) = cv2.boundingRect(tot)
-        if (x1<=px and px<=x2 and y1<=py and py<=y2):
+        ((x,y),radius) = cv2.minEnclosingCircle(tot)
+        if dist(x,y,px,py)<=radius:
             return True
     return False
 
@@ -176,20 +189,18 @@ def isFineToShoot():#judge
         return False;
     
 def mood():#TODO:return dog mood based on recently acceleration count,1to100,integer/float
+    return 10;
     pass
 
-def takePhoto():
+def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool instead
     try:
         _,frame = cam2.read()
         return frame
     except:
         print "take fail.frome takePhoto()"
         return -1
-    import cv2
-import math
-lower = (25,85,6)
-upper = (64,255,255)
-rounds = []
+
+
 def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
@@ -281,7 +292,7 @@ def TennisDetect(frame2):#capture a picture and perform a tennis detect
         return [0,0,0]
 #--------------------------------------------------------------
 state = systemState.loading
-print "step 0 of 5:perform arduino detection"
+print "step 0 of 6:perform arduino detection"
 port_list = list(serial.tools.list_ports.comports())  
 if len(port_list)<=0:
     print("E:arduino base not found.")
@@ -299,17 +310,20 @@ else:
     time.sleep(0.5)
     callUno(Command.STOP)
     print("connection test complete.")
-print "step 1 of 5:read user preferences"
+print "step 1 of 6:read user preferences"
 with open("UserPreferences.pk","rb") as usf:
     strategy = pickle.load(usf)
     print("strategy=",strategy)
-print "step 2 of 5:start user respond service"
+print "step 2 of 6:start user respond service"
 thread.start_new_thread(start_http_handler,())
-print "step 3 of 5:start direct play service"
+print "step 3 of 6:start direct play service"
 thread.start_new_thread(start_service,())
-print "step 4 of 5:start dog mood processing service"
+print "step 4 of 6:start photoPool service"
+thread.start_new_thread(photoPool,(cam2))
+print "step 5 of 6:start dog mood processing service"
+#TODO
+print "step 6 of 6:start autoretrieve service"
 
-print "step 5 of 5:start tennis detect service"
 while True:
     if (state==systemState.loading):
         print "automode started."
