@@ -1,14 +1,18 @@
 import serial
 import serial.tools.list_ports
-
-def callUno(action,parameter=-1):
-    if (parameter==-1):
-        arduino.write(str(action)+" "+str(normalSpeed))
-    else:
-        if parameter>0 and parameter<=999:
-            arduino.write(str(action)+" "+str(parameter))
-        else:
-            print("E:callUno parameter fail")
+from enum import Enum
+normalSpeed = 111
+class Command(Enum):
+                 # 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
+    STOP = 0
+    FORWARD = 1
+    BACK = 2
+    LEFT = 3
+    RIGHT = 4
+    TURNLEFT = 5
+    TURNRIGHT = 6
+    SHOOT = 7
+    PICK = 8
 def scanUno():
     print "step 0 of 6:perform arduino detection"
     port_list = list(serial.tools.list_ports.comports())  
@@ -17,4 +21,15 @@ def scanUno():
     else:
         pl1 =list(port_list[0]) 
         port_using = pl1[0]
-        return arduino.name
+        arduino = serial.Serial(port_using,57600,timeout = 60) 
+        print("using ",arduino.name)
+        return arduino
+
+def callUno(serials,action,parameter=-1):
+    if (parameter==-1):
+        serials.write(str(action)+" "+str(normalSpeed))
+    else:
+        if parameter>0 and parameter<=999:
+            serials.write(str(action)+" "+str(parameter))
+        else:
+            print("E:callUno parameter fail")
