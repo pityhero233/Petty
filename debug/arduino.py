@@ -27,7 +27,10 @@ def scanUno():
 
 def callUno(arduino,action,parameter=-1):
     if (parameter==-1):
-        arduino.write(str(action)+" "+str(normalSpeed))
+        if action==Command.STOP:
+            arduino.write('0')
+        else:
+            arduino.write(str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
             arduino.write('0')

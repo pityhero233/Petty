@@ -46,7 +46,7 @@ def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool 
     except:
         print "take fail.frome takePhoto()"
         return -1
-currentPhoto=takePhoto(cam2)#test if the cam is success
+currentPhoto=takePhoto()#test if the cam is success
 
 class Command(Enum):
                  # 0->STOP  1->FORWARD  2->BACK   3->LEFT   4->RIGHT   5->TURNLEFT  6->TURNRIGHT
@@ -144,7 +144,10 @@ def ReadRawFile(filepath):
 
 def callUno(action,parameter=-1):
     if (parameter==-1):
-        arduino.write(str(action)+" "+str(normalSpeed))
+        if action==Command.STOP:
+            arduino.write('0')
+        else:
+            arduino.write(str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
             arduino.write('0')
