@@ -107,6 +107,7 @@ def upAuto():
 @app.route('/down')
 def downAuto():
     state=systemState.handmode
+    print('now state=',state)
     return 'auto down'
 @app.route('/shoot')
 def shoot():
@@ -151,14 +152,18 @@ def callUnoBase(action,parameter=-1):
     if (parameter==-1):
         if action==Command.STOP:
             arduino.write('0')
+            print('writed 0')
         else:
             arduino.write(str(action)+" "+str(normalSpeed))
+            print('writed ',str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
             arduino.write('0')
+            print('writed 0')
         else:
             if parameter>0 and parameter<=999:
                 arduino.write(str(action)+" "+str(parameter))
+                print('writed ',str(action)+" "+str(normalSpeed))
             else:
                 print("E:callUno parameter fail")
     thread.exit_thread()
@@ -342,6 +347,7 @@ print "step 5 of 6:start dog mood processing service"
 print "step 6 of 6:start autoretrieve service"
 
 while True:
+    print ("    from main():state=",state)
     if (state==systemState.loading):
         print "automode started."
         state=systemState.automode_normal
