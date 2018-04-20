@@ -20,7 +20,7 @@ def takePhotoDeprecated(cam2):
         return -1
 def takePhoto():#take a photo using outside func
     try:
-        os.system("fswebcam -d "+systemDevice+"-r 640x480 --no-banner tot.jpg")
+        os.system("fswebcam -d "+systemDevice+" -r 640x480 --no-banner tot.jpg")
         pic = cv2.imread("tot.jpg")
         return pic
     except:

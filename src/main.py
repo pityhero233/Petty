@@ -62,7 +62,7 @@ def takePhotoFromVideoCapture(cam2):#Deprecated,for it delays badly TESTED ,usin
 
 def takePhoto():#take a photo using outside func
     try:
-        os.system("fswebcam -d "+systemDevice+"-r 640x480 --no-banner tot.jpg")
+        os.system("fswebcam -d "+systemDevice+" -r 640x480 --no-banner tot.jpg")
         pic = cv2.imread("tot.jpg")
         return pic
     except:
@@ -440,5 +440,5 @@ while True:
                 state=systemState.automode_normal
             else:
                 state=systemState.automode_retrieve
-
+    time.sleep(0.1)#give it a rest
 #-------------------------------
