@@ -39,6 +39,16 @@ shootTryout = 0;
 lastShootTime = 0;
 ballHistory=[]
 
+print "step 0 of 6:perform arduino detection"
+port_list = list(serial.tools.list_ports.comports())  
+if len(port_list)<=0:
+    print("E:arduino base not found.")
+else:
+    pl1 =list(port_list[0]) 
+    port_using = pl1[0]
+    arduino = serial.Serial(port_using,57600,timeout = 1.5) 
+    print("using ",arduino.name)
+print("current arduino=",arduino)
 def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool instead
     try:
         _,frame = cam2.read()
@@ -149,6 +159,8 @@ def ReadRawFile(filepath):
     return tempa
 
 def callUnoBase(action,parameter=-1):
+    if not arduino.writable():
+        print("E:arduino not writable")
     if (parameter==-1):
         if action==Command.STOP:
             arduino.write('0')
@@ -170,6 +182,8 @@ def callUnoBase(action,parameter=-1):
 
 def callUno(action,parameter=-1):
     thread.start_new_thread(callUnoBase,(action,parameter))
+
+
 
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
@@ -314,24 +328,16 @@ def TennisDetect(frame2):#capture a picture and perform a tennis detect
         return [0,0,0]
 #--------------------------------------------------------------
 state = systemState.loading
-print "step 0 of 6:perform arduino detection"
-port_list = list(serial.tools.list_ports.comports())  
-if len(port_list)<=0:
-    print("E:arduino base not found.")
-else:
-    pl1 =list(port_list[0]) 
-    port_using = pl1[0]
-    arduino = serial.Serial(port_using,57600,timeout = 60) 
-    print("using ",arduino.name)
-    print("testing connection...")
-    callUno(Command.FORWARD)
-    time.sleep(3)
-    callUno(Command.STOP)
-    time.sleep(3)
-    callUno(Command.SHOOT)
-    time.sleep(3)
-    callUno(Command.STOP)
-    print("connection test complete.")
+# if True: IGNORED HACK
+#     print("testing connection...")
+#     callUno(Command.FORWARD)
+#     time.sleep(3)
+#     callUno(Command.STOP)
+#     time.sleep(3)
+#     callUno(Command.SHOOT)
+#     time.sleep(3)
+#     callUno(Command.STOP)
+#     print("connection test complete.")
 print "step 1 of 6:read user preferences"
 with open("UserPreferences.pk","rb") as usf:
     strategy = pickle.load(usf)
@@ -348,7 +354,7 @@ print "step 6 of 6:start autoretrieve service"
 
 while True:
     if (state==systemState.loading):
-        print "automode started."
+        print "handmode started."
         state=systemState.handmode
     elif (state==systemState.automode_normal):
         dogmood = mood()
