@@ -347,10 +347,9 @@ print "step 5 of 6:start dog mood processing service"
 print "step 6 of 6:start autoretrieve service"
 
 while True:
-    print ("    from main():state=",state)
     if (state==systemState.loading):
         print "automode started."
-        state=systemState.automode_normal
+        state=systemState.handmode
     elif (state==systemState.automode_normal):
         dogmood = mood()
         if dogmood>50:
