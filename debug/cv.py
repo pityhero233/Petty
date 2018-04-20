@@ -1,5 +1,7 @@
 import cv2
 import math
+import time
+import thread
 lower = (25,85,6)
 upper = (64,255,255)
 rounds = []
@@ -13,6 +15,31 @@ def takePhoto(cam2):
     except:
         print "take fail.frome takePhoto()"
         return -1
+cam2 = cv2.VideoCapture(0)
+currentPhoto = takePhoto(cam2)
+
+def photoPool(cam):#grab&throw excessive frames and refresh pool every 0.5 secs
+    bt = time.time()
+    while True:
+        _,_ = cam.grab()#FIXME #1
+        if (time.time()-bt)>0.5:
+            print "photoPool updated."
+            _,currentPhoto = cam.read()
+            bt = time.time()
+
+def flush(cam):
+    bt = time.time()
+    while bt==time.time():
+        cam.grab()
+    print "flush complete."
+
+
+def getPhoto(cam):
+    flush(cam)
+    return takePhoto(cam)
+
+def current():
+    show(getPhoto(cam2))
 
 def show(pic):
     try:
@@ -114,4 +141,5 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
         #         cv2.circle(frame2,center,5,(0,0,255),-1)
         #         return datatorep
 
-cam = cv2.VideoCapture(0)
+
+

@@ -25,11 +25,14 @@ def scanUno():
         print("using ",arduino.name)
         return arduino
 
-def callUno(serials,action,parameter=-1):
+def callUno(arduino,action,parameter=-1):
     if (parameter==-1):
-        serials.write(str(action)+" "+str(normalSpeed))
+        arduino.write(str(action)+" "+str(normalSpeed))
     else:
-        if parameter>0 and parameter<=999:
-            serials.write(str(action)+" "+str(parameter))
+        if action==Command.STOP:
+            arduino.write('0')
         else:
-            print("E:callUno parameter fail")
+            if parameter>0 and parameter<=999:
+                arduino.write(str(action)+" "+str(parameter))
+            else:
+                print("E:callUno parameter fail")

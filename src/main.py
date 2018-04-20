@@ -38,6 +38,14 @@ screeny = 320
 shootTryout = 0;
 lastShootTime = 0;
 ballHistory=[]
+
+def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool instead
+    try:
+        _,frame = cam2.read()
+        return frame
+    except:
+        print "take fail.frome takePhoto()"
+        return -1
 currentPhoto=takePhoto(cam2)#test if the cam is success
 
 class Command(Enum):
@@ -138,10 +146,13 @@ def callUno(action,parameter=-1):
     if (parameter==-1):
         arduino.write(str(action)+" "+str(normalSpeed))
     else:
-        if parameter>0 and parameter<=999:
-            arduino.write(str(action)+" "+str(parameter))
+        if action==Command.STOP:
+            arduino.write('0')
         else:
-            print("E:callUno parameter fail")
+            if parameter>0 and parameter<=999:
+                arduino.write(str(action)+" "+str(parameter))
+            else:
+                print("E:callUno parameter fail")
 
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
@@ -192,13 +203,7 @@ def mood():#TODO:return dog mood based on recently acceleration count,1to100,int
     return 10;
     pass
 
-def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool instead
-    try:
-        _,frame = cam2.read()
-        return frame
-    except:
-        print "take fail.frome takePhoto()"
-        return -1
+
 
 
 def getCircle(frame2):#returns a num[] contains [x,y,r]
@@ -319,7 +324,7 @@ thread.start_new_thread(start_http_handler,())
 print "step 3 of 6:start direct play service"
 thread.start_new_thread(start_service,())
 print "step 4 of 6:start photoPool service"
-thread.start_new_thread(photoPool,(cam2))
+thread.start_new_thread(photoPool,(cam2,))#FIXED
 print "step 5 of 6:start dog mood processing service"
 #TODO
 print "step 6 of 6:start autoretrieve service"
