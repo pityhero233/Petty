@@ -2,50 +2,60 @@ import cv2
 import math
 import time
 import thread
+import os
 lower = (25,85,6)
 upper = (64,255,255)
 rounds = []
+systemDevice = "/dev/video1"
+
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 
-def takePhoto(cam2):
+def takePhotoDeprecated(cam2):
     try:
         _,frame = cam2.read()
         return frame
     except:
         print "take fail.frome takePhoto()"
         return -1
-cam2 = cv2.VideoCapture(0)
-currentPhoto = takePhoto(cam2)
+def takePhoto():#take a photo using outside func
+    try:
+        os.system("fswebcam -d "+systemDevice+"-r 640x480 --no-banner tot.jpg")
+        pic = cv2.imread("tot.jpg")
+        return pic
+    except:
+        print "takePhoto Error"
 
-def photoPool(cam):#grab&throw excessive frames and refresh pool every 0.5 secs
-    bt = time.time()
-    while True:
-        _,_ = cam.grab()#FIXME #1
-        if (time.time()-bt)>0.5:
-            print "photoPool updated."
-            _,currentPhoto = cam.read()
-            bt = time.time()
+currentPhoto = takePhoto()
 
-def flush(cam):
-    bt = time.time()
-    while bt==time.time():
-        cam.grab()
-    print "flush complete."
+# def photoPool(cam):#grab&throw excessive frames and refresh pool every 0.5 secs
+#     bt = time.time()
+#     while True:
+#         _,_ = cam.grab()#FIXME #1
+#         if (time.time()-bt)>0.5:
+#             print "photoPool updated."
+#             _,currentPhoto = cam.read()
+#             bt = time.time()
+
+# def flush(cam):
+#     bt = time.time()
+#     while bt==time.time():
+#         cam.grab()
+#     print "flush complete."
 
 
-def getPhoto(cam):
-    flush(cam)
-    return takePhoto(cam)
+# def getPhoto(cam):
+#     flush(cam)
+#     return takePhoto(cam)
 
 def current():
-    show(getPhoto(cam2))
+    show(takePhoto())
 
 def show(pic):
     try:
         cv2.namedWindow("debug",cv2.WINDOW_AUTOSIZE)
         cv2.imshow("debug",pic)
-        cv2.waitKey(0)
+        cv2.waitKey(20)
     except:
         print "fail in show()"
     finally:

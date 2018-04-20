@@ -21,7 +21,7 @@ app = Flask("Petty")
 #upper = np.array([85,255,255])
 LowerBlue = np.array([100, 0, 0])
 UpperBlue = np.array([130, 255, 255])
-cam2 = cv2.VideoCapture(1)#system cam
+#cam2 = cv2.VideoCapture(1)#system cam
 iBest = -1.0
 String = ""
 R=[30,31,32]
@@ -34,6 +34,9 @@ pickupThreshold = 20#FIXME
 pickAngleThreshold = 50#FIXME
 screenx = 640#camera resolution
 screeny = 320
+
+systemDevice = "/dev/video1"
+directPlayDevice = "/dev/video2"
 
 shootTryout = 0;
 lastShootTime = 0;
@@ -49,13 +52,22 @@ else:
     arduino = serial.Serial(port_using,57600,timeout = 1.5) 
     print("using ",arduino.name)
 print("current arduino=",arduino)
-def takePhoto():#Deprecated,for it delays badly TESTED ,using multi thread pool instead
+def takePhotoFromVideoCapture(cam2):#Deprecated,for it delays badly TESTED ,using multi thread pool instead
     try:
         _,frame = cam2.read()
         return frame
     except:
         print "take fail.frome takePhoto()"
         return -1
+
+def takePhoto():#take a photo using outside func
+    try:
+        os.system("fswebcam -d "+systemDevice+"-r 640x480 --no-banner tot.jpg")
+        pic = cv2.imread("tot.jpg")
+        return pic
+    except:
+        print "takePhoto Error"
+    
 currentPhoto=takePhoto()#test if the cam is success
 
 class Command(Enum):
@@ -147,7 +159,7 @@ def start_http_handler():
 	app.run(host='0.0.0.0',port=5000)
 
 def start_service():
-    res=os.system('''mjpg_streamer -i "input_uvc.so -d /dev/video2 -f 10 -y" -o "output_http.so -w www -p 8888"''')#dont forget to change video n
+    res=os.system('''mjpg_streamer -i "input_uvc.so -d '''+directPlayDevice+''' -f 10 -y" -o "output_http.so -w www -p 8888"''')#dont forget to change video n
 
 def ReadRawFile(filepath):
     file = open(filepath)
@@ -346,8 +358,9 @@ print "step 2 of 6:start user respond service"
 thread.start_new_thread(start_http_handler,())
 print "step 3 of 6:start direct play service"
 thread.start_new_thread(start_service,())
-print "step 4 of 6:start photoPool service"
-thread.start_new_thread(photoPool,(cam2,))#FIXED
+print "PASSED step 4 of 6:start photoPool service"
+# thread.start_new_thread(photoPool,(cam2,))#FIXED
+# using outer func instead
 print "step 5 of 6:start dog mood processing service"
 #TODO
 print "step 6 of 6:start autoretrieve service"
