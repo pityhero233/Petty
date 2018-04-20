@@ -82,37 +82,42 @@ def hello_world():
 	return 'server run success on port 80'
 @app.route('/l')
 def left():
-	if state==systemState.handmode:
-        	callUno(Command.LEFT)
+    if state==systemState.handmode:
+        callUno(Command.LEFT)
+    return 'left done'
 @app.route('/r')
 def right():
-	if state==systemState.handmode:
-        	callUno(Command.RIGHT)
+    if state==systemState.handmode:
+        callUno(Command.RIGHT)
+    return 'right done'
 @app.route('/f')
 def forward():
-	if state==systemState.handmode:
-        	callUno(Command.FORWARD)
+    if state==systemState.handmode:
+        callUno(Command.FORWARD)
+    return 'forward done'
 @app.route('/d')
 def down():
-	if state==systemState.handmode:
-        	callUno(Command.BACK)
+    if state==systemState.handmode:
+        callUno(Command.BACK)
+    return 'back done'
 @app.route('/up')
 def upAuto():
-	state=systemState.automode_normal
-
+    state=systemState.automode_normal
+    return 'auto up'
 @app.route('/down')
 def downAuto():
-	state=systemState.handmode
+    state=systemState.handmode
+    return 'auto down'
 @app.route('/shoot')
 def shoot():
-	if state==systemState.handmode:
-        	callUno(Command.SHOOT)
-
+    if state==systemState.handmode:
+        callUno(Command.SHOOT)
+    return 'shoot done'
 @app.route('/pick')
 def pick():
-	if state==systemState.handmode:
-        	callUno(Command.PICK)
-
+    if state==systemState.handmode:
+        callUno(Command.PICK)
+    return 'pick done'
 @app.route('/prefer_playdog')
 def chg_prf_pd():
     strategy = userPreference.PlayDog
