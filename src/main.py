@@ -142,7 +142,7 @@ def ReadRawFile(filepath):
         tempa = tempa.replace(" ","").replace("\n","")
     return tempa
 
-def callUno(action,parameter=-1):
+def callUnoBase(action,parameter=-1):
     if (parameter==-1):
         if action==Command.STOP:
             arduino.write('0')
@@ -156,6 +156,10 @@ def callUno(action,parameter=-1):
                 arduino.write(str(action)+" "+str(parameter))
             else:
                 print("E:callUno parameter fail")
+    thread.exit_thread()
+
+def callUno(action,parameter=-1):
+    thread.start_new_thread(callUnoBase,(action,parameter))
 
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
@@ -311,11 +315,11 @@ else:
     print("using ",arduino.name)
     print("testing connection...")
     callUno(Command.FORWARD)
-    time.sleep(0.5)
+    time.sleep(3)
     callUno(Command.STOP)
-    time.sleep(0.5)
+    time.sleep(3)
     callUno(Command.SHOOT)
-    time.sleep(0.5)
+    time.sleep(3)
     callUno(Command.STOP)
     print("connection test complete.")
 print "step 1 of 6:read user preferences"
