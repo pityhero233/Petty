@@ -3,6 +3,7 @@ import math
 import time
 import thread
 import os
+import numpy as np
 lower = (25,85,6)
 upper = (64,255,255)
 rounds = []
@@ -91,65 +92,147 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
 
         maxPercentage = 0
         maxPercentageContour = None
-
-        for contour in contours:
+        for contour in contours:#TODO:1.for(x,y,r,contourArea,...)
             ((x,y),radius) = cv2.minEnclosingCircle(contour)
             contourArea = cv2.contourArea(contour)
             M=cv2.moments(contour)
             center = (int(M["m10"]/M["m00"]),int(M["m01"]/M["m00"]))
-
-            if radius>10.0:
-                rounds.append([x,y,radius,contourArea,int([M["m10"]/M["m00"]]),int(M["m01"]/M["m00"])])
-
-        for (x1,y1,r1,s1,cx1,cy1) in rounds:
-            for (x2,y2,r2,s2,cx2,cy2) in rounds:
-                if (x1!=x2 and y1!=y2 and r1!=r2):
-                    dist1 = x1*x1+y1*y1;
-                    dist2 = x2*x2+y2*y2;
-                    if (math.fabs(dist1-dist2)<=10 and math.fabs(r1-r2)<=10):
-                        mergedX = (x1+x2)/2.0
-                        mergedY = (y1+y2)/2.0
-                        mergedR = (r1+r2)/2.0
-                        mergedS = (s1+s2)
-                        rounds.remove([x1,y1,r1,s1,cx1,cy1])
-                        rounds.remove([x2,y2,r2,s2,cx2,cy2])
-                        rounds.append([mergedX,mergedY,mergedR,mergedS])
-                        print "one round merged."
-
-
-        for contour in rounds:#TODO:1.for(x,y,r,contourArea,...)
-                       #2:add moments for finding center.leave 142 behind.
-            contourArea=contour[3];
-            radius = contour[2];
             percentage = contourArea / (radius * radius * 3.1415926)
-            if percentage>maxPercentage and percentage>0.50:#requires DEBUG
+            if percentage>maxPercentage and percentage>0.50 and radius>10.0 and radius<100.0:#requires DEBUG
                 maxPercentageContour = contour
                 maxPercentage = percentage
-
-        if (maxPercentageContour!=None):
-            x = maxPercentageContour[0]
-            y = maxPercentageContour[1]
-            radius = maxPercentageContour[2]
-            center = (maxPercentageContour[4],contourArea[5])
-            #M=cv2.moments(maxPercentageContour)
-            #center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
-            #((x,y),radius) = cv2.minEnclosingCircle(contour)
-            cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
-            cv2.circle(frame2,center,5,(0,0,255),-1)
-            datatorep = [int(x),int(y),int(radius)]
-            return datatorep
-        else:
+        if maxPercentageContour==None:
+            #print "hahahahaha,zhao bu dao"
+            pass
             return -1
-        # if len(contours)>0:
-        #     c = max(contours,key=cv2.contourArea
-        #     ((x,y),radius) = cv2.minEnclosingCircle(c)
-        #     M=cv2.moments(c)
-        #     center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
-        #     if radius > 10: #confirm it is a ball
-        #         datatorep = [int(x),int(y),int(radius)]
-        #         cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
-        #         cv2.circle(frame2,center,5,(0,0,255),-1)
-        #         return datatorep
+        else:
+            ((x,y),radius) = cv2.minEnclosingCircle(contour)
+            M=cv2.moments(maxPercentageContour)
+            center = (int(M["m10"]/M["m00"]),int(M["m01"]/M["m00"]))
+            (x,y) = center
+            return [x,y,radius]
 
 
 
+
+def getCircleOrg(frame2):
+    element = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
+    HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
+    H,S,V = cv2.split(HSV)
+    gray = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
+    circles1 = cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
+    try:
+        circlesm = circles1[0,:,:]
+        circlesm = np.uint16(np.around(circlesm))
+        bestConf = -1
+        for index,i in enumerate(circlesm[:]):
+            cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
+            # cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
+            # cv2.circle(diff,(i[0],i[1]),i[2],(255,0,0),5)
+        #print "circle:",i[0],"x",i[1],",r=",i[2]
+            bx = i[0]-i[2];by = i[1]-i[2];
+            ex = i[0]+i[2]-1;ey = i[1]+i[2]-1;
+            confident = 0;
+            for x in range(bx,ex):
+                for y in range(by,ey):
+                    try:
+                        h=H[y,x]
+                        if 40<h<85:
+                            confident = confident + 1 
+                    except IndexError,e:
+                        pass
+                        print e.message;
+                        #print("W:Index read error\n")
+            confident = confident*1000.0/(4.0*i[2]*i[2]) #the area percent of green detected
+            #print "confidence = ",confident
+            if bestConf<confident:
+                bestConf = confident
+                iBest = index
+
+    except TypeError,e:
+        print("no circle detected!")
+        pass
+    if (iBest!=-1):
+        print "Best circle chosen @i=",iBest,",conf=",bestConf,",R=",circlesm[iBest][2]
+
+        try:
+            cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
+            return frame2
+        except:
+            print "E:Segmentation Fault while choosing iBest"
+
+def getCircleOrgBetter(frame2):
+    element = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
+
+    HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
+
+    #HSV = cv2.GaussianBlur(HSV, (5, 5), 0)
+    H,S,V = cv2.split(HSV)
+    mask = cv2.inRange(HSV,lower,upper)
+    certain = cv2.bitwise_and(frame2,frame2,mask=mask)
+    #cv2.imshow("splitter",np.stack([frame,frame2,certain]))
+    diff = cv2.GaussianBlur(certain,(5,5),0)
+    diff = cv2.threshold(certain, 25, 255, cv2.THRESH_BINARY)[1]
+    diff = cv2.morphologyEx(diff,cv2.MORPH_OPEN,element)
+    diff = cv2.morphologyEx(diff,cv2.MORPH_CLOSE,element)
+
+    gray = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
+#print(frame2.shape)
+
+#circles1= cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=240)
+    circles1 = cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1,150,param1=100,param2=30,minRadius=15,maxRadius=100)
+#circles2 = cv2.HoughCircles(diff,cv2.HOUGH_GRADIENT,1,100,param1=100,param2=30,minRadius=5,maxRadius=300)
+    try:
+        circlesm = circles1[0,:,:]
+        circlesm = np.uint16(np.around(circlesm))
+        bestConf = -1
+        for index,i in enumerate(circlesm[:]):
+            cv2.circle(frame2,(i[0],i[1]),i[2],(255,0,0),5)
+            cv2.circle(certain,(i[0],i[1]),i[2],(255,0,0),5)
+            cv2.circle(diff,(i[0],i[1]),i[2],(255,0,0),5)
+        #print "circle:",i[0],"x",i[1],",r=",i[2]
+            bx = i[0]-i[2];by = i[1]-i[2];
+            ex = i[0]+i[2];ey = i[1]+i[2];
+            confident = 0;
+            for x in range(bx,ex):
+                for y in range(by,ey):
+                    try:
+                        for vector in diff[y,x,:]:
+                            if vector >125:
+                                confident = confident + 1
+                    except IndexError,e:
+                        pass
+                        #print e.message;
+                        #print("W:Index read error\n")
+            confident = confident*1000.0/(4.0*i[2]*i[2])
+            #print "confidence = ",confident
+            if bestConf<confident:
+                bestConf = confident
+                iBest = index
+
+    except TypeError,e:
+        #print("no circle detected!")
+        pass
+    if (iBest!=-1):
+        #print "Best circle chosen @i=",iBest,",conf=",bestConf,",R=",circlesm[iBest][2]
+
+        try:
+            cv2.circle(frame2,(circlesm[iBest][0],circlesm[iBest][1]),circlesm[iBest][2],(0,255,0),5)
+            #name = "test#"+str(count)+".jpg"
+            #name2 = "test#"+str(count)+"c.jpg"
+            #cv2.imwrite(name,frame2);
+            #cv2.imwrite(name2,diff)
+            return frame2
+            #v2.waitKey(10)
+            pass
+        except TypeError,e:
+            #print e.message
+            pass
+            #print "E:Segmentation Fault while choosing iBest"
+    else:
+        pass
+        #print "no best circle chosen..."
+    #cv2.imshow("splitter",np.hstack([frame2,certain]))
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    #time.sleep(1)

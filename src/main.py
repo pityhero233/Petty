@@ -51,7 +51,7 @@ else:
     port_using = pl1[0]
     arduino = serial.Serial(port_using,57600,timeout = 1.5) 
     print("using ",arduino.name)
-print("current arduino=",arduino)
+    print("current arduino=",arduino)
 def takePhotoFromVideoCapture(cam2):#Deprecated,for it delays badly TESTED ,using multi thread pool instead
     try:
         _,frame = cam2.read()
@@ -176,24 +176,28 @@ def callUnoBase(action,parameter=-1):
     if (parameter==-1):
         if action==Command.STOP:
             arduino.write('0')
+            time.sleep(0.5)
             print('writed 0')
         else:
             arduino.write(str(action)+" "+str(normalSpeed))
+            time.sleep(0.5)
             print('writed ',str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
             arduino.write('0')
+            time.sleep(0.5)
             print('writed 0')
         else:
             if parameter>0 and parameter<=999:
                 arduino.write(str(action)+" "+str(parameter))
+                time.sleep(0.5)
                 print('writed ',str(action)+" "+str(normalSpeed))
             else:
                 print("E:callUno parameter fail")
     thread.exit_thread()
 
 def callUno(action,parameter=-1):
-    thread.start_new_thread(callUnoBase,(action,parameter))
+    callUnoBase(action,parameter);
 
 
 
@@ -246,9 +250,6 @@ def mood():#TODO:return dog mood based on recently acceleration count,1to100,int
     return 10;
     pass
 
-
-
-
 def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
@@ -262,65 +263,25 @@ def getCircle(frame2):#returns a num[] contains [x,y,r]
 
         maxPercentage = 0
         maxPercentageContour = None
-
-        for contour in contours:
+        for contour in contours:#TODO:1.for(x,y,r,contourArea,...)
             ((x,y),radius) = cv2.minEnclosingCircle(contour)
             contourArea = cv2.contourArea(contour)
             M=cv2.moments(contour)
             center = (int(M["m10"]/M["m00"]),int(M["m01"]/M["m00"]))
-
-            if radius>10.0:
-                rounds.append([x,y,radius,contourArea,int([M["m10"]/M["m00"]]),int(M["m01"]/M["m00"])])
-
-        for (x1,y1,r1,s1,cx1,cy1) in rounds:
-            for (x2,y2,r2,s2,cx2,cy2) in rounds:
-                if (x1!=x2 and y1!=y2 and r1!=r2):
-                    dist1 = x1*x1+y1*y1;
-                    dist2 = x2*x2+y2*y2;
-                    if (math.fabs(dist1-dist2)<=10 and math.fabs(r1-r2)<=10):
-                        mergedX = (x1+x2)/2.0
-                        mergedY = (y1+y2)/2.0
-                        mergedR = (r1+r2)/2.0
-                        mergedS = (s1+s2)
-                        rounds.remove([x1,y1,r1,s1,cx1,cy1])
-                        rounds.remove([x2,y2,r2,s2,cx2,cy2])
-                        rounds.append([mergedX,mergedY,mergedR,mergedS])
-                        print "one round merged."
-
-
-        for contour in rounds:#TODO:1.for(x,y,r,contourArea,...)
-                       #2:add moments for finding center.leave 142 behind.
-            contourArea=contour[3];
-            radius = contour[2];
             percentage = contourArea / (radius * radius * 3.1415926)
-            if percentage>maxPercentage and percentage>0.50:#requires DEBUG
+            if percentage>maxPercentage and percentage>0.50 and radius>10.0 and radius<100.0:#requires DEBUG
                 maxPercentageContour = contour
                 maxPercentage = percentage
-
-        if (maxPercentageContour!=None):
-            x = maxPercentageContour[0]
-            y = maxPercentageContour[1]
-            radius = maxPercentageContour[2]
-            center = (maxPercentageContour[4],contourArea[5])
-            #M=cv2.moments(maxPercentageContour)
-            #center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
-            #((x,y),radius) = cv2.minEnclosingCircle(contour)
-            cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
-            cv2.circle(frame2,center,5,(0,0,255),-1)
-            datatorep = [int(x),int(y),int(radius)]
-            return datatorep
-        else:
+        if maxPercentageContour==None:
+            #print "hahahahaha,zhao bu dao"
+            pass
             return -1
-        # if len(contours)>0:
-        #     c = max(contours,key=cv2.contourArea
-        #     ((x,y),radius) = cv2.minEnclosingCircle(c)
-        #     M=cv2.moments(c)
-        #     center = (int(M["m10"]/M["m00"]), int(M["m01"] / M["m00"]))
-        #     if radius > 10: #confirm it is a ball
-        #         datatorep = [int(x),int(y),int(radius)]
-        #         cv2.circle(frame2,(int(x),int(y)),int(radius),(0,255,255),2)
-        #         cv2.circle(frame2,center,5,(0,0,255),-1)
-        #         return datatorep
+        else:
+            ((x,y),radius) = cv2.minEnclosingCircle(contour)
+            M=cv2.moments(maxPercentageContour)
+            center = (int(M["m10"]/M["m00"]),int(M["m01"]/M["m00"]))
+            (x,y) = center
+            return [x,y,radius]
 
 
 
