@@ -38,8 +38,8 @@ screeny = 320
 systemDevice = "/dev/video1"
 directPlayDevice = "/dev/video2"
 
-shootTryout = 0;
-lastShootTime = 0;
+shootTryout = 0
+lastShootTime = 0
 ballHistory=[]
 
 print "step 0 of 6:perform arduino detection"
@@ -79,8 +79,8 @@ class Command(Enum):
     RIGHT = 4
     TURNLEFT = 5
     TURNRIGHT = 6
-    SHOOT = 7
-    PICK = 8
+    SHOOT = 8
+    PICK = 7
 
 class systemState(Enum):
     empty = 0
@@ -122,6 +122,16 @@ def down():
     if state==systemState.handmode:
         callUno(Command.BACK)
     return 'back done'
+@app.route('/turnleft')
+def turnleft():
+    if state==systemState.handmode:
+        callUno(Command.TURNLEFT)
+    return 'left done'
+@app.route('/turnright')
+def turnright():
+    if state==systemState.handmode:
+        callUno(Command.TURNRIGHT)
+    return 'right done'
 @app.route('/up')
 def upAuto():
     state=systemState.automode_normal
@@ -327,6 +337,7 @@ print "step 5 of 6:start dog mood processing service"
 print "step 6 of 6:start autoretrieve service"
 
 while True:
+    print "R:state=",systemState
     if (state==systemState.loading):
         print "handmode started."
         state=systemState.handmode
@@ -401,5 +412,5 @@ while True:
                 state=systemState.automode_normal
             else:
                 state=systemState.automode_retrieve
-    time.sleep(0.1)#give it a rest
+    time.sleep(1)#give it a rest
 #-------------------------------
