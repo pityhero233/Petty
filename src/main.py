@@ -35,8 +35,8 @@ pickAngleThreshold = 50#FIXME
 screenx = 640#camera resolution
 screeny = 320
 
-systemDevice = "/dev/video1"
-directPlayDevice = "/dev/video2"
+systemDevice = "/dev/video2"
+directPlayDevice = "/dev/video1"
 
 shootTryout = 0
 lastShootTime = 0
@@ -102,6 +102,10 @@ strategy = userPreference.PlayDog#TODO
 @app.route('/')
 def hello_world():
 	return 'server run success on port 80'
+@app.route('/stop')
+def haltit():
+    callUno(Command.STOP)
+    return 'stopped'
 @app.route('/l')
 def left():
     if state==systemState.handmode:
@@ -134,10 +138,13 @@ def turnright():
     return 'right done'
 @app.route('/up')
 def upAuto():
+    global state
     state=systemState.automode_normal
+    print('now state=',state)
     return 'auto up'
 @app.route('/down')
 def downAuto():
+    global state
     state=systemState.handmode
     print('now state=',state)
     return 'auto down'
@@ -204,11 +211,9 @@ def callUnoBase(action,parameter=-1):
                 print('writed ',str(action)+" "+str(normalSpeed))
             else:
                 print("E:callUno parameter fail")
-    thread.exit_thread()
 
 def callUno(action,parameter=-1):
-    callUnoBase(action,parameter);
-
+    callUnoBase(action,parameter)
 
 
 def dist(x1,y1,x2,y2):
@@ -249,7 +254,7 @@ def isFineToShoot():#judge
     if (dt>=minShootTime):#if 
         pass
     else:
-        return False;
+        return False
     #2.judge night
     if (time.localtime(time.time()).tm_hour>6 and time.localtime(time.time()).tm_hour<21):
         return True
@@ -337,12 +342,12 @@ print "step 5 of 6:start dog mood processing service"
 print "step 6 of 6:start autoretrieve service"
 
 while True:
-    print "R:state=",systemState
+    print "R:state=<SystemState>",state
     if (state==systemState.loading):
         print "handmode started."
         state=systemState.handmode
     elif (state==systemState.automode_normal):
-        dogmood = mood()
+        dogmood = input('debug:dogmood : ')
         if dogmood>50:
             state=systemState.automode_shooting
             p1 = takePhoto();time.sleep(1); p2 = takePhoto();
