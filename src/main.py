@@ -410,7 +410,7 @@ while True:
                 
     elif (state==systemState.automode_retrieve_go):
         pic = takePhoto()
-        if pic!=-1:
+        if 1!=-1:#HACK FIXME
             loc = TennisDetect(pic)
             if loc!=[0,0,0]:#FIXME
                 pass#SHOULD BE JUDGE WHEN TO PICK THE BALL AND EVENTUALLY PICK IT 
