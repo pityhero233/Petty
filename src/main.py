@@ -81,6 +81,7 @@ class Command(Enum):
     TURNRIGHT = 6
     SHOOT = 8
     PICK = 7
+    HIGHPRECISERIGHT = 9
 
 class systemState(Enum):
     empty = 0
@@ -347,27 +348,33 @@ while True:
         print "handmode started."
         state=systemState.handmode
     elif (state==systemState.automode_normal):
-        dogmood = input('debug:dogmood : ')
+        dogmood = input('debug:dogmood:')
         if dogmood>50:
             state=systemState.automode_shooting
             p1 = takePhoto();time.sleep(1); p2 = takePhoto();
             if not isDangerous(p1,p2,320,240) and isFineToShoot(): #HACK
                 callUno(Command.SHOOT)
+                print "right to shoot:shoot performed."
                 shootTryout = 0;
                 time.sleep(random.randint(5,20))
                 state=systemState.automode_retrieve
             else:
+                print "right"
                 callUno(Command.RIGHT)
                 time.sleep(0.5)
+                print "stop"
                 callUno(Command.STOP)
+                time.sleep(1)
                 shootTryout = shootTryout+1
+                print "shootTryout=",shootTryout
                 if shootTryout>10:
                     shootTryout = 0;
+                    state = systemState.automode_normal
                     print("dog not good,shoot another time.")
                     lastShootTime = time.time()
     elif (state==systemState.automode_retrieve):
         pic = takePhoto();
-        if pic!=-1:#take success
+        if 1!=-1:#take success HACK FIXME
             ans = TennisDetect(pic)
             if ans!=[0,0,0]:#ball found
                 ballHistory.append(ans)
@@ -381,18 +388,16 @@ while True:
                     _numbercnt=_numbercnt+1
                 avgx = _sx/_numbercnt
                 avgy = _sy/_numbercnt
+                print "BALLavgx = ",avgx,"BALLavgy = ",avgy
+                print "pickAngle=",math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))
                 if dist(ans[0],ans[1],avgx,avgy)<=pickupThreshold:#ball stopped
                     if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))<=pickAngleThreshold:#angle right
                             state=systemState.automode_retrieve_go
                     else:
                         if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))>0:
                             callUno(Command.TURNRIGHT,100)
-                            time.sleep(0.3)
-                            callUno(Command.STOP)
                         else:
                             callUno(Command.TURNLEFT,100)
-                            time.sleep(0.3)
-                            callUno(Command.STOP)
             else:#ball not found
                 if len(ballHistory)>0:#trying to track ball based on last appear position
                     lastID = len(ballHistory)-1
