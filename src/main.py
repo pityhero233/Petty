@@ -15,6 +15,7 @@ from enum import Enum
 
 
 #lower = np.array([40,0,0])
+NULL = 424242#MAGIC NUM
 lower = (25,85,6)
 upper = (64,255,255)
 app = Flask("Petty")
@@ -31,27 +32,43 @@ rounds = []
 normalSpeed = 111#100 to 999
 minShootTime = 1200;#20 minutes = 1200 secs
 pickupThreshold = 20#FIXME
-pickAngleThreshold = 50#FIXME
+pickAngleThreshold = 200#FIXME
 screenx = 640#camera resolution
 screeny = 320
 
 systemDevice = "/dev/video2"
 directPlayDevice = "/dev/video1"
 
+arduinoLoc = "/dev/ttyACM0"#volatile
+blunoLoc = "/dev/ttyACM1"#volatile
+
+
 shootTryout = 0
 lastShootTime = 0
 ballHistory=[]
-
+todayMomentum=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]#1-24h
+uMomentum=0.0
+hMomentum=0.0
+hLastEntry=-1#last time update todayMomentum
 print "step 0 of 6:perform arduino detection"
-port_list = list(serial.tools.list_ports.comports())  
-if len(port_list)<=0:
-    print("E:arduino base not found.")
-else:
-    pl1 =list(port_list[0]) 
-    port_using = pl1[0]
-    arduino = serial.Serial(port_using,57600,timeout = 1.5) 
-    print("using ",arduino.name)
-    print("current arduino=",arduino)
+arduino = serial.Serial(arduinoLoc,57600,timeout=1.5)
+print("using ",arduino.name," for arduino")
+bluno = serial.Serial(blunoLoc,115200,timeout=1.5)
+print("using",bluno.name," for bluno")
+
+def scanUno():
+    port_list = list(serial.tools.list_ports.comports())  
+    if len(port_list)<=0:
+        print("E:arduino base not found.")
+        return NULL
+    else:
+        pl1 =list(port_list[0]) 
+        port_using = pl1[0]
+        arduino = serial.Serial(port_using,57600,timeout = 1.5) 
+        print("using ",arduino.name)
+        print("current arduino=",arduino)
+        return arduino
+
 def takePhotoFromVideoCapture(cam2):#Deprecated,for it delays badly TESTED ,using multi thread pool instead
     try:
         _,frame = cam2.read()
@@ -130,12 +147,12 @@ def down():
 @app.route('/turnleft')
 def turnleft():
     if state==systemState.handmode:
-        callUno(Command.TURNLEFT)
+        callUno(Command.TURNLEFT,300)
     return 'left done'
 @app.route('/turnright')
 def turnright():
     if state==systemState.handmode:
-        callUno(Command.TURNRIGHT)
+        callUno(Command.TURNRIGHT,300)
     return 'right done'
 @app.route('/up')
 def upAuto():
@@ -193,18 +210,18 @@ def callUnoBase(action,parameter=-1):
         print("E:arduino not writable")
     if (parameter==-1):
         if action==Command.STOP:
-            arduino.write('0')
+            arduino.write('1 000')
             time.sleep(0.5)
-            print('writed 0')
+            print('writed 1 000')
         else:
             arduino.write(str(action)+" "+str(normalSpeed))
             time.sleep(0.5)
             print('writed ',str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
-            arduino.write('0')
+            arduino.write('1 000')
             time.sleep(0.5)
-            print('writed 0')
+            print('writed 1 000')
         else:
             if parameter>0 and parameter<=999:
                 arduino.write(str(action)+" "+str(parameter))
@@ -263,9 +280,19 @@ def isFineToShoot():#judge
         return False;
     
 def mood():#TODO:return dog mood based on recently acceleration count,1to100,integer/float
-    return 10;
-    pass
-
+    global uMomentum,hMomentum,hLastEntry
+    while True:
+        raw=bluno.read_until('\r\n')
+        while raw!='':
+            x,y,z = raw.split(",")
+            #print("x=",x,",y=",y,",z=",z)
+            uMomentum=math.fabs(int(x))+math.fabs(int(y))+math.fabs(int(z)) #update current
+            hMomentum=hMomentum+uMomentum/3600.0 #add a small bonus
+            if time.localtime(time.time()).tm_hour!=hLastEntry:#if a new hour occours
+                hLastEntry=time.localtime(time.time()).tm_hour
+                todayMomentum[hLastEntry-1]=hMomentum
+                hMomentum=0.0#clear the temp momentum
+            raw=''
 def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
@@ -339,7 +366,8 @@ print "PASSED step 4 of 6:start photoPool service"
 # thread.start_new_thread(photoPool,(cam2,))#FIXED
 # using outer func instead
 print "step 5 of 6:start dog mood processing service"
-#TODO
+_ = bluno.read_all()#flush the pool
+thread.start_new_thread(mood,())
 print "step 6 of 6:start autoretrieve service"
 
 while True:
@@ -347,8 +375,9 @@ while True:
     if (state==systemState.loading):
         print "handmode started."
         state=systemState.handmode
-    elif (state==systemState.automode_normal):
-        dogmood = input('debug:dogmood:')
+    elif (state==systemState.automode_normal or state==systemState.automode_shooting):#fixed
+        dogmood = uMomentum*2.0
+        print "uDogmood=",dogmood
         if dogmood>50:
             state=systemState.automode_shooting
             p1 = takePhoto();time.sleep(1); p2 = takePhoto();
@@ -359,12 +388,14 @@ while True:
                 time.sleep(random.randint(5,20))
                 state=systemState.automode_retrieve
             else:
-                print "right"
-                callUno(Command.RIGHT)
-                time.sleep(0.5)
+                print "isDangerous=",isDangerous(p1,p2,320,240)
+                print "going right"
+                callUno(Command.RIGHT,150)
+                time.sleep(2)
                 print "stop"
                 callUno(Command.STOP)
-                time.sleep(1)
+                time.sleep(5)
+                print "stop completed"
                 shootTryout = shootTryout+1
                 print "shootTryout=",shootTryout
                 if shootTryout>10:
@@ -396,8 +427,10 @@ while True:
                     else:
                         if math.fabs(RadJudge(ans[0],ans[1],screenx,screeny))>0:
                             callUno(Command.TURNRIGHT,100)
+                            time.sleep(1)
                         else:
                             callUno(Command.TURNLEFT,100)
+                            time.sleep(1)
             else:#ball not found
                 if len(ballHistory)>0:#trying to track ball based on last appear position
                     lastID = len(ballHistory)-1
@@ -405,22 +438,31 @@ while True:
                         state=systemState.automode_retrieve_go
                     else:
                         if math.fabs(RadJudge(ballHistory[lastID][0],ballHistory[lastID][1],screenx,screeny))>0:
-                            callUno(Command.TURNRIGHT,100)
-                            time.sleep(0.3)
+                            callUno(Command.TURNRIGHT,150)
+                            time.sleep(1)
                             callUno(Command.STOP)
+                            time.sleep(1)
                         else:
-                            callUno(Command.TURNLEFT,100)
-                            time.sleep(0.3)
+                            callUno(Command.TURNLEFT,150)
+                            time.sleep(1)
                             callUno(Command.STOP)
-                
+                            time.sleep(1)
     elif (state==systemState.automode_retrieve_go):
         pic = takePhoto()
         if 1!=-1:#HACK FIXME
             loc = TennisDetect(pic)
             if loc!=[0,0,0]:#FIXME
+                callUno(Command.FORWARD);
                 pass#SHOULD BE JUDGE WHEN TO PICK THE BALL AND EVENTUALLY PICK IT 
-                state=systemState.automode_normal
+                if (loc[2]>=73):#FIXME
+                    callUno(Command.STOP);
+                    print "close enough!"
+                    time.sleep(2)
+                    callUno(Command.PICK)
+                    time.sleep(2)
+                    state=systemState.automode_normal
             else:
+                print "ball out-of-sight"
                 state=systemState.automode_retrieve
     time.sleep(1)#give it a rest
 #-------------------------------

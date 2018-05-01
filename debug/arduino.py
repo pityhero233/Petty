@@ -39,3 +39,11 @@ def callUno(arduino,action,parameter=-1):
                 arduino.write(str(action)+" "+str(parameter))
             else:
                 print("E:callUno parameter fail")
+
+def mood(bluno):#TODO:return dog mood based on recently acceleration count,1to100,integer/float
+    while True:
+        raw=bluno.read_until("\r\n")
+        while raw!='':
+            x,y,z = raw.split(",")
+            print("x=",x,",y=",y,",z=",z)
+            raw=''
