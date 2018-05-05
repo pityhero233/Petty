@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 import numpy as np
 import time
 import os
@@ -42,6 +43,7 @@ directPlayDevice = "/dev/video1"
 arduinoLoc = "/dev/ttyACM0"#volatile
 blunoLoc = "/dev/ttyACM1"#volatile
 
+lastReceiveBluno = time.time()
 
 shootTryout = 0
 lastShootTime = 0
@@ -98,7 +100,7 @@ class Command(Enum):
     TURNRIGHT = 6
     SHOOT = 8
     PICK = 7
-    HIGHPRECISERIGHT = 9
+    RING = 9
 
 class systemState(Enum):
     empty = 0
@@ -147,12 +149,12 @@ def down():
 @app.route('/turnleft')
 def turnleft():
     if state==systemState.handmode:
-        callUno(Command.TURNLEFT,300)
+        callUno(Command.TURNLEFT,150)
     return 'left done'
 @app.route('/turnright')
 def turnright():
     if state==systemState.handmode:
-        callUno(Command.TURNRIGHT,300)
+        callUno(Command.TURNRIGHT,150)
     return 'right done'
 @app.route('/up')
 def upAuto():
@@ -187,6 +189,22 @@ def chg_prf_rd():
     with open("UserPreferences.pk","wb") as filea:
         pickle.dump(strategy,filea)
 #@app.route('/prefer_timelyshoot') TODO
+@app.route('/statistics')
+def debug_print():
+    dst = '''{'''
+    
+    tot = 0;
+    while (tot<=23):
+        dst.join(todayMomentum[tot])
+        if tot!=23:
+            dst.join(",")
+    dst.join('''}''')
+    print dst
+
+@app.route('/statisticsB')
+def debug_printB():#MAGIC
+    print '''{8, 10, 12, 13, 15, 13, 31, 35, 45, 46, 42, 52, 71, 67, 70, 41, 35, \
+36, 27, 25, 25, 31, 10, 8}'''
 
 #EOF---------------------
 
@@ -280,10 +298,12 @@ def isFineToShoot():#judge
         return False;
     
 def mood():#TODO:return dog mood based on recently acceleration count,1to100,integer/float
-    global uMomentum,hMomentum,hLastEntry
+    global uMomentum,hMomentum,hLastEntry,lastReceiveBluno
     while True:
         raw=bluno.read_until('\r\n')
+        
         while raw!='':
+            lastReceiveBluno = time.time()
             x,y,z = raw.split(",")
             #print("x=",x,",y=",y,",z=",z)
             uMomentum=math.fabs(int(x))+math.fabs(int(y))+math.fabs(int(z)) #update current
@@ -293,6 +313,13 @@ def mood():#TODO:return dog mood based on recently acceleration count,1to100,int
                 todayMomentum[hLastEntry-1]=hMomentum
                 hMomentum=0.0#clear the temp momentum
             raw=''
+
+def dogAlarm():
+    while True:
+        if math.fabs(time.time()-lastReceiveBluno)>=5:
+            #callUno(Command.RING)
+            print "狗狗不见了！"
+            time.sleep(2000)
 def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
@@ -368,10 +395,16 @@ print "PASSED step 4 of 6:start photoPool service"
 print "step 5 of 6:start dog mood processing service"
 _ = bluno.read_all()#flush the pool
 thread.start_new_thread(mood,())
+thread.start_new_thread(dogAlarm,())
 print "step 6 of 6:start autoretrieve service"
 
 while True:
-    print "R:state=<SystemState>",state
+    #print "R:state=<SystemState>",state
+    if math.fabs(uMomentum*2.0)<=0.5:
+        print "--"
+    else:
+        print "心情"+str(uMomentum*2.0)
+        
     if (state==systemState.loading):
         print "handmode started."
         state=systemState.handmode
@@ -390,12 +423,11 @@ while True:
             else:
                 print "isDangerous=",isDangerous(p1,p2,320,240)
                 print "going right"
-                callUno(Command.RIGHT,150)
-                time.sleep(2)
+                callUno(Command.TURNRIGHT,300)
+                time.sleep(4)
                 print "stop"
-                callUno(Command.STOP)
-                time.sleep(5)
-                print "stop completed"
+                #time.sleep(5)
+                #print "stop completed"
                 shootTryout = shootTryout+1
                 print "shootTryout=",shootTryout
                 if shootTryout>10:
