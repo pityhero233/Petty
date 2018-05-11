@@ -53,7 +53,7 @@ uMomentum=0.0
 hMomentum=0.0
 hLastEntry=-1#last time update todayMomentum
 print "step 0 of 6:perform arduino detection"
-arduino = serial.Serial(arduinoLoc,57600,timeout=1.5)
+arduino = serial.Serial(arduinoLoc,57600,timeout=1.5,rtscts=True,dsrdtr=True)#FIX
 print("using ",arduino.name," for arduino")
 bluno = serial.Serial(blunoLoc,115200,timeout=1.5)
 print("using",bluno.name," for bluno")
@@ -128,33 +128,45 @@ def haltit():
     return 'stopped'
 @app.route('/l')
 def left():
+    print "from flask:begin write left"
     if state==systemState.handmode:
         callUno(Command.LEFT)
+    print "from flask:end writing left"
     return 'left done'
 @app.route('/r')
 def right():
+    print "from flask:begin write right"
     if state==systemState.handmode:
         callUno(Command.RIGHT)
+    print "from flask:begin write right"
     return 'right done'
 @app.route('/f')
 def forward():
+    print "from flask:begin write forward"
     if state==systemState.handmode:
         callUno(Command.FORWARD)
+    print "from flask:begin write forward"
     return 'forward done'
 @app.route('/d')
 def down():
+    print "from flask:begin write down"
     if state==systemState.handmode:
         callUno(Command.BACK)
+    print "from flask:begin write down"
     return 'back done'
 @app.route('/turnleft')
 def turnleft():
+    print "from flask:begin write turnleft"
     if state==systemState.handmode:
         callUno(Command.TURNLEFT,150)
+    print "from flask:end write turnleft"
     return 'left done'
 @app.route('/turnright')
 def turnright():
+    print "from flask:begin write turnright"
     if state==systemState.handmode:
         callUno(Command.TURNRIGHT,150)
+    print "from flask:begin write turnright"
     return 'right done'
 @app.route('/up')
 def upAuto():
@@ -255,7 +267,6 @@ def callUno(action,parameter=-1):
 def dist(x1,y1,x2,y2):
     return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 
-
 def photoPool(cam):#grab&throw excessive frames and refresh pool every 0.5 secs
     bt = time.time()
     while True:
@@ -306,20 +317,21 @@ def mood():#TODO:return dog mood based on recently acceleration count,1to100,int
             lastReceiveBluno = time.time()
             x,y,z = raw.split(",")
             #print("x=",x,",y=",y,",z=",z)
-            uMomentum=math.fabs(int(x))+math.fabs(int(y))+math.fabs(int(z)) #update current
-            hMomentum=hMomentum+uMomentum/3600.0 #add a small bonus
-            if time.localtime(time.time()).tm_hour!=hLastEntry:#if a new hour occours
-                hLastEntry=time.localtime(time.time()).tm_hour
-                todayMomentum[hLastEntry-1]=hMomentum
-                hMomentum=0.0#clear the temp momentum
-            raw=''
+            if x!='' and y!='' and z!='':
+                uMomentum=math.fabs(int(x))+math.fabs(int(y))+math.fabs(int(z)) #update current
+                hMomentum=hMomentum+uMomentum/3600.0 #add a small bonus
+                if time.localtime(time.time()).tm_hour!=hLastEntry:#if a new hour occours
+                    hLastEntry=time.localtime(time.time()).tm_hour
+                    todayMomentum[hLastEntry-1]=hMomentum
+                    hMomentum=0.0#clear the temp momentum
+                raw=''
 
 def dogAlarm():
     while True:
         if math.fabs(time.time()-lastReceiveBluno)>=5:
             #callUno(Command.RING)
             print "狗狗不见了！"
-            time.sleep(2000)
+            time.sleep(2)
 def getCircle(frame2):#returns a num[] contains [x,y,r]
     if True:
         HSV =  cv2.cvtColor(frame2,cv2.COLOR_BGR2HSV)
