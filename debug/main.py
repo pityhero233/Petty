@@ -240,7 +240,7 @@ def callUnoBase(action,parameter=-1):
         print("E:arduino not writable")
     if (parameter==-1):
         if action==Command.STOP:
-            arduino.write('1 000')
+            arduino.write('i')
             time.sleep(0.5)
             print('writed 1 000')
         else:
@@ -249,12 +249,12 @@ def callUnoBase(action,parameter=-1):
             print('writed ',str(action)+" "+str(normalSpeed))
     else:
         if action==Command.STOP:
-            arduino.write('1 000')
+            arduino.write('i')
             time.sleep(0.5)
             print('writed 1 000')
         else:
             if parameter>0 and parameter<=999:
-                arduino.write(str(action)+" "+str(parameter))
+                arduino.write('i')
                 time.sleep(0.5)
                 print('writed ',str(action)+" "+str(normalSpeed))
             else:
@@ -509,4 +509,4 @@ while True:
                 print "ball out-of-sight"
                 state=systemState.automode_retrieve
     time.sleep(1)#give it a rest
-#-------------------------------
+#---------------------------------------------------------

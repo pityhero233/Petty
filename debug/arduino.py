@@ -15,13 +15,13 @@ class Command(Enum):
     PICK = 8
 def scanUno():
     print "step 0 of 6:perform arduino detection"
-    port_list = list(serial.tools.list_ports.comports())  
+    port_list = list(serial.tools.list_ports.comports())
     if len(port_list)<=0:
         print("E:arduino base not found.")
     else:
-        pl1 =list(port_list[0]) 
+        pl1 =list(port_list[0])
         port_using = pl1[0]
-        arduino = serial.Serial(port_using,57600,timeout = 60) 
+        arduino = serial.Serial(port_using,57600,timeout = 60)
         print("using ",arduino.name)
         return arduino
 
